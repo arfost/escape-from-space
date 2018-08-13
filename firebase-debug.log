@@ -1,0 +1,41 @@
+[debug] [2018-08-12T15:28:00.659Z] ----------------------------------------------------------------------
+[debug] [2018-08-12T15:28:00.664Z] Command:       /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] [2018-08-12T15:28:00.664Z] CLI Version:   4.0.3
+[debug] [2018-08-12T15:28:00.664Z] Platform:      darwin
+[debug] [2018-08-12T15:28:00.664Z] Node Version:  v8.4.0
+[debug] [2018-08-12T15:28:00.666Z] Time:          Sun Aug 12 2018 17:28:00 GMT+0200 (CEST)
+[debug] [2018-08-12T15:28:00.666Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-08-12T15:28:00.680Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-08-12T15:28:00.680Z] > authorizing via signed-in user
+[debug] [2018-08-12T15:28:00.682Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/escape-from-space  
+  
+ Sun Aug 12 2018 17:28:00 GMT+0200 (CEST)
+[debug] [2018-08-12T15:28:01.279Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-12T15:28:01.280Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/escape-from-space/tokens  
+  
+ Sun Aug 12 2018 17:28:01 GMT+0200 (CEST)
+[debug] [2018-08-12T15:28:01.762Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-12T15:28:01.763Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/escape-from-space  
+  
+ Sun Aug 12 2018 17:28:01 GMT+0200 (CEST)
+[debug] [2018-08-12T15:28:02.596Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/Users/chevalierclement/projects/escape-from-space'...
+[info] 
+[info] i  functions: Preparing to emulate functions.
+[debug] [2018-08-12T15:28:03.533Z] Fetching environment
+[debug] [2018-08-12T15:28:03.535Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/1016708495078:getServerAppConfig  
+  
+ Sun Aug 12 2018 17:28:03 GMT+0200 (CEST)
+[debug] [2018-08-12T15:28:03.536Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/1016708495078/clients/_:getWebAppConfig  
+  
+ Sun Aug 12 2018 17:28:03 GMT+0200 (CEST)
+[debug] [2018-08-12T15:28:03.968Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-12T15:28:03.969Z] Starting @google-cloud/functions-emulator
+[debug] [2018-08-12T15:28:03.990Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: public
+[info] ✔  hosting: Local server: http://localhost:5000
+
+[debug] [2018-08-12T15:28:05.557Z] Parsing function triggers
+[info] i  functions: No HTTPS functions found. Use firebase functions:shell if you would like to emulate other types of functions.
