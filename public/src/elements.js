@@ -1,4 +1,5 @@
 import { LitElement, html } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import { until } from 'https://unpkg.com/lit-html@0.10.2/lib/until.js?module'
 
 class BaseEfsElement extends LitElement {
     constructor() {
@@ -9,14 +10,32 @@ class BaseEfsElement extends LitElement {
         throw new Error("getter is must be overidden with the name of the element")
     }
 
-    firebaseData(path, cb){
-        return firebase.app().database().ref(path).on('value', (snapshot) => {
+    firebaseData(path, cb, params=[]){
+        let nodeRef = firebase.app().database().ref(path);
+        for (let param in params) {
+            nodeRef = nodeRef[param](params[param]);
+        }
+        return nodeRef.on('value', (snapshot) => {
             cb(snapshot.val())
         });
     }
 
     firebaseSet(path, value){
         return firebase.app().database().ref(path).set(value);
+    }
+
+    firebaseOnce(path, params=[]){
+        let nodeRef = firebase.app().database().ref(path);
+        for (let param in params) {
+            nodeRef = nodeRef[param](params[param]);
+        }
+        return nodeRef.once('value').then(snap=>snap.val());
+    }
+
+    firebasePush(path, value){
+        let ref = firebase.app().database().ref(path);
+        let child = ref.push();
+        return child.set(value);
     }
 
     firebaseUpdate(path, value){
@@ -41,6 +60,12 @@ class BaseEfsElement extends LitElement {
                 display: flex;
                 align-items: center;
                 padding:1em;
+            }
+            .horizontal{
+                flex-direction:row;
+            }
+            .vertical{
+                flex-direction:column;
             }`
     }
 
@@ -152,7 +177,6 @@ class LogHeader extends BaseEfsElement {
     }
 
     get errorHtml() {
-        console.log('error')
         return html`
             <div>hey error</div>
         `
@@ -160,20 +184,30 @@ class LogHeader extends BaseEfsElement {
 
     content(user){
         if(user){
-            return html`welcom to game`
+            return html`<efs-shell user="${user}"></efs-shell>`
         }else{
             return html`first login and configure your account before playing`
         }
     }
 
+    get userInit(){
+        return {
+            game:false
+        }
+    }
+
     confUser(detail){
-        console.log("conf conf", detail)
-        this.firebaseSet(`/users/${this.uid}`, detail).then(()=>{
+        if(detail.cancel){
+            this.showPopup = false;
+            return
+        }
+        this.firebaseUpdate(`/users/${this.uid}`, Object.assign(this.userInit,this.user,{
+            uid:this.uid
+        },detail)).then(()=>{
             this.showPopup = false;
         })
     }
     _render({user, token, logError, email, showPopup}) {
-        console.log("render", user, token, logError, email, showPopup)
         return html`
         <style>
             ${this.appTheme}
@@ -182,7 +216,7 @@ class LogHeader extends BaseEfsElement {
         </style>
         <div class="header content-box">
             <div>
-            <div on-click="${(e) => {
+            <div on-click="${() => {
                 console.log(this.showPopup)
                 this.showPopup = true
                 }}">conf</div>
@@ -297,50 +331,34 @@ class EfsShell extends BaseEfsElement {
     
     static get properties() {
         return {
-            title: String
+            user: Object
         }
     }
 
     get selfStyle() {
         return `
-            
+            .efs-shell{
+                border:1em solid red;
+            }
         `
     }
 
-    cancel(){
-        this.dispatchEvent(new CustomEvent('validate', {detail: {cancel: true}}))
-    }
-
-    validate(){
-
-        this.dispatchEvent(new CustomEvent('validate', {detail: 
-            {
-                name: this.shadowRoot.getElementById('name').value
-            }
-        }))
-    }
-
-    _render({title}) {
+    _render({user}) {
+        console.log('render shell : ', user, user ? user.uid : '')
         return html`
         <style>
             ${this.appTheme}
             ${this.sharedStyles}
             ${this.selfStyle}
         </style>
-        <div class="backdrop content-box">
-            <div >
-                <div >${title}</div>
-                <div>
-                    <div>
-                        <label for="name">Name:</label>
-                        <input type="text" id="name" name="user_name">
-                    </div>
-                </div>
-                <div>
-                    <button on-click="${e => this.cancel(e)}">cancel</button>
-                    <button on-click="${e => this.validate(e)}">validate</button>
-                </div>
-            </div>
+        <div class="efs-shell">
+            ${(user?
+                (user.game ? 
+                    html`<efs-game userid$='${user.uid}' game-id$="${user.game}"></efs-game>"`:
+                    html`<efs-lobby userid$="${user.uid}"></efs-lobby>`):
+                    html`loading`
+                )
+            }
         </div>
         `
     }
@@ -351,40 +369,154 @@ class EfsLobby extends BaseEfsElement {
     //we need to init values in constructor
     constructor() {
         super();
+        this.firebaseData('users', data=>{
+            if(data){
+                this.playerList = Object.values(data);
+            }
+        }, {
+            orderByChild: "game",
+            equalTo: false
+        })
+        this.playerList = [];
     }
     
     static get properties() {
         return {
-            title: String
+            userid: String,
+            playerList:Array,
         }
     }
 
     get selfStyle() {
         return `
-            
+            :host{
+                padding:5em;
+            }
+            .lobby{
+
+            }
+            .player-list{
+                padding:1em;
+            }
         `
     }
 
-    _render({title}) {
+    playerRow(player){
+        return html`
+            <div>
+                ${player.name}
+            </div>
+        `
+    }
+
+    _render({userid, playerList}) {
+        console.log('render lobby : ', userid)
         return html`
         <style>
             ${this.appTheme}
             ${this.sharedStyles}
             ${this.selfStyle}
         </style>
-        <div class="backdrop content-box">
-            <div >
-                <div >${title}</div>
-                <div>
-                    <div>
-                        <label for="name">Name:</label>
-                        <input type="text" id="name" name="user_name">
-                    </div>
+        <div class="lobby content-box horizontal">
+            <div>
+                <div class="player-list content-box vertical">
+                    ${playerList.map(player=>this.playerRow(player))}
                 </div>
-                <div>
-                    <button on-click="${e => this.cancel(e)}">cancel</button>
-                    <button on-click="${e => this.validate(e)}">validate</button>
+                <partie-select></partie-select>
+            </div>
+                <game-chat type="/lobby/chat" userid="${userid}"></game-chat>
+            </div>
+        </div>
+        `
+    }
+}
+
+class GameChat extends BaseEfsElement {
+    static get is() { return 'game-chat' }
+    //we need to init values in constructor
+    constructor() {
+        super();
+        this.messages = [];
+    }
+    
+    static get properties() {
+        return {
+            userid: String,
+            messages:Array,
+            type:String
+        }
+    }
+
+    get selfStyle() {
+        return `
+            :host{
+                padding:5em;
+            }
+            .messages{
+
+            }
+            .new-mess{
+                padding:0.2em;
+            }
+            .green{
+                color:green;
+            }
+            .grey{
+                color:grey;
+            }
+        `
+    }
+
+    message(message, userid){
+        return html`
+            <div class="content-box horizontal">
+                <span class$="${message.posterId === userid ? 'green' : 'grey'}">${until(this.firebaseOnce(`/users/${message.posterId}/name`).then(name=>html`${name}`), html`loading...`)}</span> : <span>${message.text}</span>
+            </div>
+        `
+    }
+
+    send(){
+        let message = this.shadowRoot.getElementById('message').value;
+        if(message){
+            this.firebasePush(`${this.type}`, {
+                posterId:this.userid,
+                text:message,
+                date:Date.now()
+            })
+            this.shadowRoot.getElementById('message').value = "";
+        }
+    }
+
+    _render({userid, messages, type}) {
+        console.log('render chat : ', userid)
+        if(type && !this.requestDone){
+            this.firebaseData(`${type}`, data=>{
+                console.log(data)
+                if(data){
+                    this.messages = Object.values(data);
+                }
+            }, {
+                orderByChild: "date",
+                limitToLast: 50
+            });
+            this.requestDone = true;
+        }
+        return html`
+        <style>
+            ${this.appTheme}
+            ${this.sharedStyles}
+            ${this.selfStyle}
+        </style>
+        <div class="content-box vertical">
+            <div>
+                <div class="player-list content-box vertical">
+                    ${messages.map(message=>this.message(message, userid))}
                 </div>
+            </div>
+            <div class="content-box horizontal">
+                <label for="name">Message:</label>
+                <input type="text" id="message" name="message" style="width:70%">
+                <button class="button" on-click="${e => this.send(e)}">send</button>
             </div>
         </div>
         `
@@ -395,5 +527,6 @@ export default [
     LogHeader,
     ConfAccountPopup,
     EfsShell,
-    EfsLobby
+    EfsLobby,
+    GameChat
 ]
