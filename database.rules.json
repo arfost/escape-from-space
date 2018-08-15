@@ -4,6 +4,12 @@
     ".write": "auth != null",
     "users": {
       ".indexOn": ["game"]
+    },
+    "games": {
+      ".indexOn": ["status"]
+    },
+    "/lobby/chat": {
+      ".indexOn": ["date"]
     }
   }
 }

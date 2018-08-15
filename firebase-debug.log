@@ -1,50 +1,41 @@
-[debug] [2018-08-13T19:07:59.727Z] ----------------------------------------------------------------------
-[debug] [2018-08-13T19:07:59.730Z] Command:       /usr/local/bin/node /usr/local/bin/firebase serve
-[debug] [2018-08-13T19:07:59.730Z] CLI Version:   4.0.3
-[debug] [2018-08-13T19:07:59.730Z] Platform:      darwin
-[debug] [2018-08-13T19:07:59.730Z] Node Version:  v8.4.0
-[debug] [2018-08-13T19:07:59.731Z] Time:          Mon Aug 13 2018 21:07:59 GMT+0200 (CEST)
-[debug] [2018-08-13T19:07:59.731Z] ----------------------------------------------------------------------
+[debug] [2018-08-15T12:57:47.968Z] ----------------------------------------------------------------------
+[debug] [2018-08-15T12:57:47.971Z] Command:       /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] [2018-08-15T12:57:47.971Z] CLI Version:   4.0.3
+[debug] [2018-08-15T12:57:47.971Z] Platform:      darwin
+[debug] [2018-08-15T12:57:47.971Z] Node Version:  v8.4.0
+[debug] [2018-08-15T12:57:47.971Z] Time:          Wed Aug 15 2018 14:57:47 GMT+0200 (CEST)
+[debug] [2018-08-15T12:57:47.972Z] ----------------------------------------------------------------------
 [debug] 
-[debug] [2018-08-13T19:07:59.746Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
-[debug] [2018-08-13T19:07:59.746Z] > authorizing via signed-in user
-[debug] [2018-08-13T19:07:59.748Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
-[debug] [2018-08-13T19:07:59.748Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
- { refresh_token: '1/YymKjcJi287BXUNxkjLqieDTJPVRUFxJv0OlZtazOEg',
-  client_id: '563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com',
-  client_secret: 'j9iVZfS8kkCEFUPaAeJV0sAi',
-  grant_type: 'refresh_token',
-  scope: 'email https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/cloudplatformprojects.readonly https://www.googleapis.com/auth/firebase openid' } 
- Mon Aug 13 2018 21:07:59 GMT+0200 (CEST)
-[debug] [2018-08-13T19:07:59.859Z] <<< HTTP RESPONSE 200
-[debug] [2018-08-13T19:07:59.878Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/escape-from-space  
+[debug] [2018-08-15T12:57:47.986Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-08-15T12:57:47.986Z] > authorizing via signed-in user
+[debug] [2018-08-15T12:57:47.989Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/escape-from-space  
   
- Mon Aug 13 2018 21:07:59 GMT+0200 (CEST)
-[debug] [2018-08-13T19:08:00.430Z] <<< HTTP RESPONSE 200
-[debug] [2018-08-13T19:08:00.431Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/escape-from-space/tokens  
+ Wed Aug 15 2018 14:57:47 GMT+0200 (CEST)
+[debug] [2018-08-15T12:57:48.587Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-15T12:57:48.588Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/database/escape-from-space/tokens  
   
- Mon Aug 13 2018 21:08:00 GMT+0200 (CEST)
-[debug] [2018-08-13T19:08:00.992Z] <<< HTTP RESPONSE 200
-[debug] [2018-08-13T19:08:00.993Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/escape-from-space  
+ Wed Aug 15 2018 14:57:48 GMT+0200 (CEST)
+[debug] [2018-08-15T12:57:49.135Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-15T12:57:49.136Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/escape-from-space  
   
- Mon Aug 13 2018 21:08:00 GMT+0200 (CEST)
-[debug] [2018-08-13T19:08:01.705Z] <<< HTTP RESPONSE 200
+ Wed Aug 15 2018 14:57:49 GMT+0200 (CEST)
+[debug] [2018-08-15T12:57:50.057Z] <<< HTTP RESPONSE 200
 [info] 
 [info] === Serving from '/Users/chevalierclement/projects/escape-from-space'...
 [info] 
 [info] i  functions: Preparing to emulate functions.
-[debug] [2018-08-13T19:08:02.498Z] Fetching environment
-[debug] [2018-08-13T19:08:02.503Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/1016708495078:getServerAppConfig  
+[debug] [2018-08-15T12:57:50.576Z] Fetching environment
+[debug] [2018-08-15T12:57:50.578Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/1016708495078:getServerAppConfig  
   
- Mon Aug 13 2018 21:08:02 GMT+0200 (CEST)
-[debug] [2018-08-13T19:08:02.503Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/1016708495078/clients/_:getWebAppConfig  
+ Wed Aug 15 2018 14:57:50 GMT+0200 (CEST)
+[debug] [2018-08-15T12:57:50.579Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/1016708495078/clients/_:getWebAppConfig  
   
- Mon Aug 13 2018 21:08:02 GMT+0200 (CEST)
-[debug] [2018-08-13T19:08:02.877Z] <<< HTTP RESPONSE 200
-[debug] [2018-08-13T19:08:02.897Z] <<< HTTP RESPONSE 200
-[debug] [2018-08-13T19:08:02.897Z] Starting @google-cloud/functions-emulator
+ Wed Aug 15 2018 14:57:50 GMT+0200 (CEST)
+[debug] [2018-08-15T12:57:51.069Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-15T12:57:51.069Z] Starting @google-cloud/functions-emulator
+[debug] [2018-08-15T12:57:51.094Z] <<< HTTP RESPONSE 200
 [info] i  hosting: Serving hosting files from: public
 [info] ✔  hosting: Local server: http://localhost:5000
 
-[debug] [2018-08-13T19:08:04.458Z] Parsing function triggers
+[debug] [2018-08-15T12:57:52.652Z] Parsing function triggers
 [info] i  functions: No HTTPS functions found. Use firebase functions:shell if you would like to emulate other types of functions.
