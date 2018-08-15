@@ -8,8 +8,10 @@
     "games": {
       ".indexOn": ["status"]
     },
-    "/lobby/chat": {
-      ".indexOn": ["date"]
+    "lobby": {
+      "chat": {
+        ".indexOn": ["date"]
+      }
     }
   }
 }

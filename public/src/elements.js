@@ -5,7 +5,10 @@ import { until } from 'https://unpkg.com/lit-html@0.10.2/lib/until.js?module';
 export const onFirebasedata = (ref, content, defaultContent) => directive(part => {
     part.setValue(defaultContent);
     ref.on("value", snap=>{
-        part.setValue(content(snap.val()))
+        let data = snap.val();
+        if(data!==undefined){
+            part.setValue(content())
+        }
     })
 });
 
@@ -578,7 +581,7 @@ class PartieSelect extends BaseEfsElement {
     creaGame(){
         let gameName = this.shadowRoot.getElementById('game-name').value;
         if(gameName){
-            this.firebaseSet(`/users/${this.userid}/game`, "new");
+            this.firebaseSet(`/users/${this.userid}/game`, "new:"+gameName);
         }
     }
 
