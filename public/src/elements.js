@@ -1,13 +1,13 @@
 import { LitElement, html } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 import { directive } from 'https://unpkg.com/lit-html@0.10.2/lit-html.js?module';
-import { until } from 'https://unpkg.com/lit-html@0.10.2/lib/until.js?module';
+//import { until } from 'https://unpkg.com/lit-html@0.10.2/lib/until.js?module';
 
 export const onFirebasedata = (ref, content, defaultContent) => directive(part => {
     part.setValue(defaultContent);
     ref.on("value", snap=>{
         let data = snap.val();
         if(data!==undefined){
-            part.setValue(content())
+            part.setValue(content(data))
         }
     })
 });
@@ -545,6 +545,14 @@ class PartieSelect extends BaseEfsElement {
     constructor() {
         super();
         this.games = [];
+        this.firebaseData(`/games`, data=>{
+            if(data){
+                this.games = Object.values(data);
+            }
+        }, {
+            orderByChild: "status",
+            equalTo: "waiting"
+        });
     }
     
     static get properties() {
@@ -574,6 +582,7 @@ class PartieSelect extends BaseEfsElement {
         return html`
             <div class="content-box vertical">
                 <div><span>${game.name} (${onFirebasedata(this.firebaseRef(`/users/${game.creatorId}/name`), name=>html`${name}`, html`loading...`)})</span><span on-click="${(() => this.joinGame(game.key))}">join</span></div>
+                <div>${game.playersNb}</div>
             </div>
         `
     }
@@ -581,28 +590,17 @@ class PartieSelect extends BaseEfsElement {
     creaGame(){
         let gameName = this.shadowRoot.getElementById('game-name').value;
         if(gameName){
-            this.firebaseSet(`/users/${this.userid}/game`, "new:"+gameName);
+            this.firebaseSet(`/users/${this.userid}/game`, `new:${gameName}`);
         }
     }
 
     joinGame(gameKey){
         if(gameKey){
-            this.firebasePush(`/users/${this.userid}/game`, gameKey);
+            this.firebaseSet(`/users/${this.userid}/game`, gameKey);
         }
     }
 
     _render({userid, games}) {
-        if(!this.requestDone){
-            this.firebaseData(`/games`, data=>{
-                if(data){
-                    this.games = Object.keys(data).reduce();
-                }
-            }, {
-                orderByChild: "status",
-                equalTo: "wating"
-            });
-            this.requestDone = true;
-        }
         return html`
         <style>
             ${this.appTheme}

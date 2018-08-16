@@ -1,4 +1,6 @@
 const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp();
 
 exports.manageUserGame = functions.database.ref('/users/{id}/game')
     .onUpdate((snapshot, context) => {
@@ -7,29 +9,57 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
         const original = snapshot.after.val();
         const uid = context.params.id;
 
-        const writerUid = context.auth.uid;
-
-        if (uid !== writerUid) {
-            return functions.database.ref('/strangeActs/').push().set({
-                writerUid: writerUid,
-                uid, uid,
-                value, original
+        console.log(context.auth, uid)
+        if (context.auth !== undefined && uid !== context.auth.uid) {
+            return admin.database().ref('/strangeActs/').push().set({
+                writerUid: context.auth.uid,
+                uid: uid,
+                value: original,
             })
         }
         if(original === false){
             return
         }
         if(original.includes('new')){
-            return functions.database.ref('gameRef').once("value").then(snap => {
+            return admin.database().ref('gameRef').once("value").then(snap => {
                 let value = snap.val();
-                let ref = functions.database.ref('games').push();
+                let ref = admin.database().ref('games').push();
                 value.key = ref.key;
                 value.creatorId = uid;
+                value.name = original.split(":")[1];
+                value.status = "waiting";
+                value.playersNb = '0/2';
+                value.players = [];
                 return ref.set(value).then(()=>{
-                    return snapshot.ref.set(value.key)
+                    return snapshot.after.ref.set(value.key)
                 })
             })
         }else{
-            return functions.database.ref().once('value',snap=>functions.database.ref('games/'+original+'/nbPlayers').set((snap.val()+1)));
+            return admin.database().ref('games/'+original).once('value',snap=>{
+                let game = snap.val();
+                let actual = Number(game.playersNb.split('/')[0]);
+                let max = Number(game.playersNb.split('/')[1]);
+                if(actual < max){
+                    actual++;
+                    let player = {
+                        name:'player_'+actual,
+                        position:'3/3'
+                    }
+                    game.playersNb = actual+'/'+max;
+                    if(Array.isArray(game.players)){
+                        game.players.push(player);
+                    }else if(actual === 1){
+                        game.players = [player]
+                    }else{
+                        console.log("oups : ", game.players)
+                    }
+                    if(actual === max){
+                        game.status = "launched"
+                    }
+                    return admin.database().ref('games/'+original).set(game)
+                }else{
+                    return snapshot.after.ref.set("error")
+                }
+            });
         }
     });
