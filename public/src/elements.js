@@ -4,9 +4,9 @@ import { directive } from 'https://unpkg.com/lit-html@0.10.2/lit-html.js?module'
 
 export const onFirebasedata = (ref, content, defaultContent) => directive(part => {
     part.setValue(defaultContent);
-    ref.on("value", snap=>{
+    ref.on("value", snap => {
         let data = snap.val();
-        if(data!==undefined){
+        if (data !== undefined) {
             part.setValue(content(data))
         }
     })
@@ -21,7 +21,7 @@ class BaseEfsElement extends LitElement {
         throw new Error("getter is must be overidden with the name of the element")
     }
 
-    firebaseData(path, cb, params=[]){
+    firebaseData(path, cb, params = []) {
         let nodeRef = firebase.app().database().ref(path);
         for (let param in params) {
             nodeRef = nodeRef[param](params[param]);
@@ -30,8 +30,8 @@ class BaseEfsElement extends LitElement {
             cb(snapshot.val())
         });
     }
-    
-    firebaseRef(path, cb, params=[]){
+
+    firebaseRef(path, cb, params = []) {
         let nodeRef = firebase.app().database().ref(path);
         for (let param in params) {
             nodeRef = nodeRef[param](params[param]);
@@ -39,25 +39,25 @@ class BaseEfsElement extends LitElement {
         return nodeRef;
     }
 
-    firebaseSet(path, value){
+    firebaseSet(path, value) {
         return firebase.app().database().ref(path).set(value);
     }
 
-    firebaseOnce(path, params=[]){
+    firebaseOnce(path, params = []) {
         let nodeRef = firebase.app().database().ref(path);
         for (let param in params) {
             nodeRef = nodeRef[param](params[param]);
         }
-        return nodeRef.once('value').then(snap=>snap.val());
+        return nodeRef.once('value').then(snap => snap.val());
     }
 
-    firebasePush(path, value){
+    firebasePush(path, value) {
         let ref = firebase.app().database().ref(path);
         let child = ref.push();
         return child.set(value);
     }
 
-    firebaseUpdate(path, value){
+    firebaseUpdate(path, value) {
         return firebase.app().database().ref(path).update(value);
     }
 
@@ -111,7 +111,7 @@ class LogHeader extends BaseEfsElement {
         this.showPopup = false;
         firebase.auth().getRedirectResult().then((result) => {
             this.token = result.credential.accessToken;
-            this.firebaseData(`/users/${result.user.uid}`, (data)=>{
+            this.firebaseData(`/users/${result.user.uid}`, (data) => {
                 this.user = data;
             })
             this.email = result.user.email;
@@ -119,22 +119,22 @@ class LogHeader extends BaseEfsElement {
         }).catch((error) => {
             //
         });
-        firebase.auth().onAuthStateChanged((user)=>{
+        firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-              // User is signed in.
-              this.email = user.email;
-              this.uid = user.uid;
-              this.firebaseData(`/users/${user.uid}`, (data)=>{
-                this.user = data;
-            })
-              // [START_EXCLUDE]
-              // [END_EXCLUDE]
+                // User is signed in.
+                this.email = user.email;
+                this.uid = user.uid;
+                this.firebaseData(`/users/${user.uid}`, (data) => {
+                    this.user = data;
+                })
+                // [START_EXCLUDE]
+                // [END_EXCLUDE]
             } else {
-              this.user = undefined;
-              this.email = undefined;
-              this.uid = undefined;
+                this.user = undefined;
+                this.email = undefined;
+                this.uid = undefined;
             }
-          });
+        });
     }
     toggleLogin() {
         if (!firebase.auth().currentUser) {
@@ -147,11 +147,11 @@ class LogHeader extends BaseEfsElement {
             // [START signin]
             firebase.auth().signInWithRedirect(provider);
             // [END signin]
-          } else {
+        } else {
             // [START signout]
             firebase.auth().signOut();
             // [END signout]
-          }
+        }
     }
     static get properties() {
         return {
@@ -159,7 +159,7 @@ class LogHeader extends BaseEfsElement {
             token: String,
             logError: Object,
             email: String,
-            showPopup:Boolean
+            showPopup: Boolean
         }
     }
 
@@ -201,32 +201,32 @@ class LogHeader extends BaseEfsElement {
         `
     }
 
-    content(user){
-        if(user){
+    content(user) {
+        if (user) {
             return html`<efs-shell user="${user}"></efs-shell>`
-        }else{
+        } else {
             return html`first login and configure your account before playing`
         }
     }
 
-    get userInit(){
+    get userInit() {
         return {
-            game:false
+            game: false
         }
     }
 
-    confUser(detail){
-        if(detail.cancel){
+    confUser(detail) {
+        if (detail.cancel) {
             this.showPopup = false;
             return
         }
-        this.firebaseUpdate(`/users/${this.uid}`, Object.assign(this.userInit,this.user,{
-            uid:this.uid
-        },detail)).then(()=>{
+        this.firebaseUpdate(`/users/${this.uid}`, Object.assign(this.userInit, this.user, {
+            uid: this.uid
+        }, detail)).then(() => {
             this.showPopup = false;
         })
     }
-    _render({user, token, logError, email, showPopup}) {
+    _render({ user, token, logError, email, showPopup }) {
         return html`
         <style>
             ${this.appTheme}
@@ -237,21 +237,21 @@ class LogHeader extends BaseEfsElement {
             <div>
             <div on-click="${() => {
                 this.showPopup = true
-                }}">conf</div>
+            }}">conf</div>
                 ${
-                    (showPopup ? 
-                        html`<conf-account-popup title="Configure account"  on-validate="${e => this.confUser(e.detail)}"></conf-account-popup>`:
-                        html``
-                    )
-                }
+            (showPopup ?
+                html`<conf-account-popup title="Configure account"  on-validate="${e => this.confUser(e.detail)}"></conf-account-popup>` :
+                html``
+            )
+            }
                 
                 ${(user ? html`
-                    <img class="avatar" src$="${user.avatar}"></img>
+                    <img class="avatar" src$="${user.avatar}">
                     <div>${user.name}</div>
                 `:
-                (email ? 'configure your account before playing':'login with google to play'))}
+                (email ? 'configure your account before playing' : 'login with google to play'))}
             </div>
-            <div class="accountInfos"><span>${email}</span><button class='button' on-click="${e => this.toggleLogin(e)}">${email ? 'log out':'log in'}</button></div>
+            <div class="accountInfos"><span>${email}</span><button class='button' on-click="${e => this.toggleLogin(e)}">${email ? 'log out' : 'log in'}</button></div>
         </div>
         <div style="margin-top:8em">
             ${this.content(user)}
@@ -269,7 +269,7 @@ class ConfAccountPopup extends BaseEfsElement {
     constructor() {
         super();
     }
-    
+
     static get properties() {
         return {
             title: String
@@ -303,20 +303,21 @@ class ConfAccountPopup extends BaseEfsElement {
         `
     }
 
-    cancel(){
-        this.dispatchEvent(new CustomEvent('validate', {detail: {cancel: true}}))
+    cancel() {
+        this.dispatchEvent(new CustomEvent('validate', { detail: { cancel: true } }))
     }
 
-    validate(){
+    validate() {
 
-        this.dispatchEvent(new CustomEvent('validate', {detail: 
+        this.dispatchEvent(new CustomEvent('validate', {
+            detail:
             {
                 name: this.shadowRoot.getElementById('name').value
             }
         }))
     }
 
-    _render({title}) {
+    _render({ title }) {
         return html`
         <style>
             ${this.appTheme}
@@ -348,7 +349,7 @@ class EfsShell extends BaseEfsElement {
     constructor() {
         super();
     }
-    
+
     static get properties() {
         return {
             user: Object
@@ -363,7 +364,7 @@ class EfsShell extends BaseEfsElement {
         `
     }
 
-    _render({user}) {
+    _render({ user }) {
         return html`
         <style>
             ${this.appTheme}
@@ -371,12 +372,12 @@ class EfsShell extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="efs-shell">
-            ${(user?
-                (user.game ? 
-                    html`<efs-game userid$='${user.uid}' game-id$="${user.game}"></efs-game>"`:
-                    html`<efs-lobby userid$="${user.uid}"></efs-lobby>`):
-                    html`loading`
-                )
+            ${(user ?
+                (user.game ?
+                    html`<efs-game userid$='${user.uid}' gameid$="${user.game}"></efs-game>` :
+                    html`<efs-lobby userid$="${user.uid}"></efs-lobby>`) :
+                html`loading`
+            )
             }
         </div>
         `
@@ -388,21 +389,21 @@ class EfsLobby extends BaseEfsElement {
     //we need to init values in constructor
     constructor() {
         super();
-        this.firebaseData('users', data=>{
-            if(data){
+        this.firebaseData('users', data => {
+            if (data) {
                 this.playerList = Object.values(data);
             }
         }, {
-            orderByChild: "game",
-            equalTo: false
-        })
+                orderByChild: "game",
+                equalTo: false
+            })
         this.playerList = [];
     }
-    
+
     static get properties() {
         return {
             userid: String,
-            playerList:Array,
+            playerList: Array,
         }
     }
 
@@ -420,7 +421,7 @@ class EfsLobby extends BaseEfsElement {
         `
     }
 
-    playerRow(player){
+    playerRow(player) {
         return html`
             <div>
                 ${player.name}
@@ -428,7 +429,7 @@ class EfsLobby extends BaseEfsElement {
         `
     }
 
-    _render({userid, playerList}) {
+    _render({ userid, playerList }) {
         return html`
         <style>
             ${this.appTheme}
@@ -438,7 +439,7 @@ class EfsLobby extends BaseEfsElement {
         <div class="lobby content-box horizontal">
             <div>
                 <div class="player-list content-box vertical">
-                    ${playerList.map(player=>this.playerRow(player))}
+                    ${playerList.map(player => this.playerRow(player))}
                 </div>
                 <partie-select userid="${userid}"></partie-select>
             </div>
@@ -456,12 +457,12 @@ class GameChat extends BaseEfsElement {
         super();
         this.messages = [];
     }
-    
+
     static get properties() {
         return {
             userid: String,
-            messages:Array,
-            type:String
+            messages: Array,
+            type: String
         }
     }
 
@@ -485,36 +486,38 @@ class GameChat extends BaseEfsElement {
         `
     }
 
-    message(message, userid){
+    message(message, userid) {
         return html`
             <div class="content-box horizontal messages">
-                <span class$="${message.posterId === userid ? 'green' : 'grey'}">${onFirebasedata(this.firebaseRef(`/users/${message.posterId}/name`), (name=>html`${name}`), html`loading...`)}</span> : <span>${message.text}</span>
+                <span class$="${message.posterId === userid ? 'green' : 'grey'}">${onFirebasedata(this.firebaseRef(`/users/${message.posterId}/name`), (name => html`${name}`), html`loading...`)}</span>
+                :
+                <span>${message.text}</span>
             </div>
         `
     }
 
-    send(){
+    send() {
         let message = this.shadowRoot.getElementById('message').value;
-        if(message){
+        if (message) {
             this.firebasePush(`${this.type}`, {
-                posterId:this.userid,
-                text:message,
-                date:Date.now()
+                posterId: this.userid,
+                text: message,
+                date: Date.now()
             })
             this.shadowRoot.getElementById('message').value = "";
         }
     }
 
-    _render({userid, messages, type}) {
-        if(type && !this.requestDone){
-            this.firebaseData(`${type}`, data=>{
-                if(data){
+    _render({ userid, messages, type }) {
+        if (type && !this.requestDone) {
+            this.firebaseData(`${type}`, data => {
+                if (data) {
                     this.messages = Object.values(data);
                 }
             }, {
-                orderByChild: "date",
-                limitToLast: 50
-            });
+                    orderByChild: "date",
+                    limitToLast: 50
+                });
             this.requestDone = true;
         }
         return html`
@@ -526,7 +529,7 @@ class GameChat extends BaseEfsElement {
         <div class="content-box vertical">
             <div>
                 <div class="player-list content-box vertical">
-                    ${messages.map(message=>this.message(message, userid))}
+                    ${messages.map(message => this.message(message, userid))}
                 </div>
             </div>
             <div class="content-box horizontal">
@@ -545,20 +548,20 @@ class PartieSelect extends BaseEfsElement {
     constructor() {
         super();
         this.games = [];
-        this.firebaseData(`/games`, data=>{
-            if(data){
+        this.firebaseData(`/games`, data => {
+            if (data) {
                 this.games = Object.values(data);
             }
         }, {
-            orderByChild: "status",
-            equalTo: "waiting"
-        });
+                orderByChild: "status",
+                equalTo: "waiting"
+            });
     }
-    
+
     static get properties() {
         return {
             games: String,
-            userid:Array
+            userid: Array
         }
     }
 
@@ -578,29 +581,32 @@ class PartieSelect extends BaseEfsElement {
         `
     }
 
-    game(game){
+    game(game) {
         return html`
             <div class="content-box vertical">
-                <div><span>${game.name} (${onFirebasedata(this.firebaseRef(`/users/${game.creatorId}/name`), name=>html`${name}`, html`loading...`)})</span><span on-click="${(() => this.joinGame(game.key))}">join</span></div>
+                <div>
+                    <span>${game.name} (${onFirebasedata(this.firebaseRef(`/users/${game.creatorId}/name`), name => html`${name}`, html`loading...`)})</span>
+                    <button class="button" on-click="${(() => this.joinGame(game.key))}">join</button>
+                </div>
                 <div>${game.playersNb}</div>
             </div>
         `
     }
 
-    creaGame(){
+    creaGame() {
         let gameName = this.shadowRoot.getElementById('game-name').value;
-        if(gameName){
+        if (gameName) {
             this.firebaseSet(`/users/${this.userid}/game`, `new:${gameName}`);
         }
     }
 
-    joinGame(gameKey){
-        if(gameKey){
+    joinGame(gameKey) {
+        if (gameKey) {
             this.firebaseSet(`/users/${this.userid}/game`, gameKey);
         }
     }
 
-    _render({userid, games}) {
+    _render({ userid, games }) {
         return html`
         <style>
             ${this.appTheme}
@@ -610,7 +616,7 @@ class PartieSelect extends BaseEfsElement {
         <div class="content-box vertical">
             <div>
                 <div class="player-list content-box vertical">
-                    ${games.map(game=>this.game(game, userid))}
+                    ${games.map(game => this.game(game, userid))}
                 </div>
             </div>
             <div class="content-box horizontal">
@@ -623,11 +629,157 @@ class PartieSelect extends BaseEfsElement {
     }
 }
 
+class EfsGame extends BaseEfsElement {
+    static get is() { return 'efs-game' }
+    //we need to init values in constructor
+    constructor() {
+        super();
+    }
+
+    static get properties() {
+        return {
+            userid: String,
+            gameid: String
+        }
+    }
+
+    get selfStyle() {
+        return `
+            .efs-game{
+                border:0.5em solid blue;
+            }
+        `
+    }
+
+    get errorScreen() {
+        return html`
+            <span class="error">An error occured joining the game. The game was probably joined by someone just before you</span>
+            <button class="button" on-click="${(() => this.firebaseSet(`/users/${this.userid}/game`, false))}">Return to lobby</button>
+        `
+    }
+
+    get waitScreen() {
+        return html`
+            <span class="error">Your game is being created, please wait you will automatically join it when it's done</span>
+        `
+    }
+
+
+
+    chooseState(gameid, userid) {
+        if (!gameid || gameid === "error") {
+            return this.errorScreen;
+        }
+        if (gameid.includes('new')) {
+            return this.waitScreen;
+        }
+        return html`<efs-game-screen userid="${userid}" gameid="${gameid}"></efs-game-screen>`;
+    }
+
+    _render({ userid, gameid }) {
+        return html`
+        <style>
+            ${this.appTheme}
+            ${this.sharedStyles}
+            ${this.selfStyle}
+        </style>
+        <div class="efs-game">
+            ${this.chooseState(gameid, userid)}
+        </div>
+        `
+    }
+}
+
+class EfsGameScreen extends BaseEfsElement {
+    static get is() { return 'efs-game-screen' }
+    //we need to init values in constructor
+    constructor() {
+        super();
+    }
+
+    static get properties() {
+        return {
+            userid: String,
+            gameid: String
+        }
+    }
+
+    get selfStyle() {
+        return `
+            .efs-game{
+                border:0.5em solid blue;
+            }
+        `
+    }
+
+    get loadingScreen() {
+        return html`
+            <span class="loading">loading...</span>
+        `
+    }
+
+    get errorScreen() {
+        return html`
+            <span class="loading">the game is in an unexpected status and will probably never start, if you see this call the creator of this game.</span>
+        `
+    }
+
+    get waitPlayerScreen() {
+        return html`
+            <span class="loading">waiting for the game to be full...</span>
+        `
+    }
+
+    get finishedScreen() {
+        return html`
+            <span class="loading">the game is finished, congrats to the survivors !</span>
+        `
+    }
+
+    chooseState(status) {
+        if (status === "waiting") {
+            return this.waitPlayerScreen;
+        }
+        if (status === "launched") {
+            return html`<efc-playground userid="${this.userid}" gameid="${this.gameid}"></efc-playground>`;
+        }
+        if (status === "finished") {
+            return this.waitScreen;
+        }
+        return this.errorScreen;
+    }
+
+    _render({ userid, gameid }) {
+        return html`
+        <style>
+            ${this.appTheme}
+            ${this.sharedStyles}
+            ${this.selfStyle}
+        </style>
+        <div class="efs-game">
+            <div class="content-box vertical">
+                <div>
+                    <div class="content-box vertical">
+                        ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`), players=>(players ? players : []).map(player=>html`<div>${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name=>name, html`loading...`)}</div>`), html`<div>loading...<div>`)}
+                    </div>
+                    <div>
+                        ${onFirebasedata(this.firebaseRef(`/games/${gameid}/status`), this.chooseState.bind(this), html`loading...`)}
+                    </div>
+                </div>
+                <game-chat type="/games/${gameid}/chat" userid="${userid}"></game-chat>
+            </div>
+        </div>
+        `
+    }
+}
+
 export default [
     LogHeader,
     ConfAccountPopup,
     EfsShell,
     EfsLobby,
     GameChat,
-    PartieSelect
+    PartieSelect,
+    EfsGame,
+    EfsGameScreen
 ]
