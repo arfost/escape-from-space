@@ -1,0 +1,27 @@
+[
+    {
+        "type":"wall-end-e",
+        "x":2,
+        "y":2
+    },
+    {
+        "type":"door-closed-eo",
+        "x":2,
+        "y":3
+    },
+    {
+        "type":"wall-eo",
+        "x":2,
+        "y":4
+    },
+    {
+        "type":"wall-light-eo",
+        "x":2,
+        "y":5
+    },
+    {
+        "type":"wall-end-o",
+        "x":2,
+        "y":6
+    }
+]

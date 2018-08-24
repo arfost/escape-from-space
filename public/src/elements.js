@@ -31,7 +31,7 @@ class BaseEfsElement extends LitElement {
         });
     }
 
-    firebaseRef(path, cb, params = []) {
+    firebaseRef(path, params = []) {
         let nodeRef = firebase.app().database().ref(path);
         for (let param in params) {
             nodeRef = nodeRef[param](params[param]);
@@ -741,10 +741,10 @@ class EfsGameScreen extends BaseEfsElement {
             return this.waitPlayerScreen;
         }
         if (status === "launched") {
-            return html`<efc-playground userid="${this.userid}" gameid="${this.gameid}"></efc-playground>`;
+            return html`<efs-playground userid="${this.userid}" gameid="${this.gameid}"></efs-playground>`;
         }
         if (status === "finished") {
-            return this.waitScreen;
+            return this.finishedScreen;
         }
         return this.errorScreen;
     }
@@ -756,11 +756,11 @@ class EfsGameScreen extends BaseEfsElement {
             ${this.sharedStyles}
             ${this.selfStyle}
         </style>
-        <div class="efs-game">
+        <div class="efs-game-screen">
             <div class="content-box vertical">
                 <div>
                     <div class="content-box vertical">
-                        ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`), players=>(players ? players : []).map(player=>html`<div>${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name=>name, html`loading...`)}</div>`), html`<div>loading...<div>`)}
+                        ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`), players => (players ? players : []).map(player => html`<div>${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}</div>`), html`<div>loading...<div>`)}
                     </div>
                     <div>
                         ${onFirebasedata(this.firebaseRef(`/games/${gameid}/status`), this.chooseState.bind(this), html`loading...`)}
@@ -768,6 +768,157 @@ class EfsGameScreen extends BaseEfsElement {
                 </div>
                 <game-chat type="/games/${gameid}/chat" userid="${userid}"></game-chat>
             </div>
+        </div>
+        `
+    }
+}
+
+class EfsPlayground extends BaseEfsElement {
+    static get is() { return 'efs-playground' }
+    //we need to init values in constructor
+    constructor() {
+        super();
+    }
+
+    static get properties() {
+        return {
+            userid: String,
+            gameid: String
+        }
+    }
+
+    get selfStyle() {
+        return `
+            .map{
+                border:0.5em solid violet;
+            }
+            .case{
+                height:3em;
+                width:3em;
+            }
+        `
+    }
+
+    _render({ userid, gameid }) {
+        console.log("render map : ", userid, gameid)
+        if (!userid || !gameid) {
+            return html`loading...`
+        }
+        return html`
+        <style>
+            ${this.appTheme}
+            ${this.sharedStyles}
+            ${this.selfStyle}
+        </style>
+        <div class="map">
+            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`, {
+                orderByChild: "uid",
+                equalTo: userid
+            }), players => {
+                console.log("players return : ", players)
+                if (players && players.length === 1) {
+                    let [player] = players;
+                    if (player.uid !== userid) {
+                        return html`Error getting the player, try to reload.`
+                    }
+                    //here we draw the map from the player pos and sigth
+                    let [x, y] = player.position.split('/');
+                    let minX = Number(x) - Number(player.sight);
+                    let maxX = Number(x) + Number(player.sight);
+                    let minY = Number(y) - Number(player.sight);
+                    let maxY = Number(y) + Number(player.sight);
+                    let cells = [];
+                    for (let i = minY; i <= maxY; i++) {
+                        for (let j = minX; j <= maxX; j++) {
+                            cells.push({
+                                x: i,
+                                y: j
+                            })
+                        }
+                    }
+                    return html`<div style="display:grid;grid-template-columns:repeat(${(Number(player.sight) * 2) + 1}, 1fr)">
+                        ${cells.map(cell => html`<game-cell class="case" userid="${userid}" gameid="${gameid}" pos="${cell.x}/${cell.y}"></game-cell>`)}
+                    </div>`
+                }
+                return html`<div>loading...</div>`
+            }, html`<div>loading...<div>`)}
+        </div>
+        <div class="action">
+            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/actions/${userid}`), actions => (actions ? actions : []).map(action => this.drawAction(action)), html`<div>loading...<div>`)}
+        </div>
+        `
+    }
+}
+
+class GameCell extends BaseEfsElement {
+    static get is() { return 'game-cell' }
+    //we need to init values in constructor
+    constructor() {
+        super();
+    }
+
+    static get properties() {
+        return {
+            pos: String,
+            userid: String,
+            gameid:String
+        }
+    }
+
+    get selfStyle() {
+        return `
+            .construct{
+                z-index:10
+            }
+            .construct img{
+                width:100%;
+                height:100%;
+            }
+            .objects{
+                z-index:11
+            }
+            .chars{
+                z-index:12
+            }
+            .monsters{
+                z-index:13
+            }
+        `
+    }
+
+    _render({ userid, pos, gameid}) {
+        if (!userid || !pos || !gameid) {
+            return html`loading...`
+        }
+        return html`
+        <style>
+            ${this.selfStyle}
+        </style>
+        <div class="construct">
+            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/cells`, {
+                orderByChild: "pos",
+                equalTo: pos
+            }), cell => {
+                try{
+                    cell = Object.values(cell)[0];
+                    return html`<img alt="${pos}" src="src/img/game/tiles/${cell.img}">`
+                }catch(e){
+                    return html`<img alt="${pos}" src="src/img/game/tiles/empty.png">`
+                }   
+                }, html`<div>loading...<div>`)}
+        </div>
+        <div class="chars">
+            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`, {
+                orderByChild: "position",
+                equalTo: pos
+            }), cell => {
+                try{
+                    cell = Object.values(cell)[0];
+                    return html`<img alt="${pos}" src="src/img/game/tiles/${cell.img}">`
+                }catch(e){
+                    return html`<img alt="${pos}" src="src/img/game/tiles/empty.png">`
+                }   
+                }, html`<div>loading...<div>`)}
         </div>
         `
     }
@@ -781,5 +932,7 @@ export default [
     GameChat,
     PartieSelect,
     EfsGame,
-    EfsGameScreen
+    EfsGameScreen,
+    EfsPlayground,
+    GameCell
 ]
