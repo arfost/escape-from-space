@@ -875,15 +875,58 @@ class GameCell extends BaseEfsElement {
                 height:100%;
             }
             .objects{
-                z-index:11
+                z-index:11;
             }
             .chars{
-                z-index:12
+                z-index:12;
+                border-radius:50%;
+                opacity:0.5;
+                background-color:black;
+                color:white;
+                height: 50%;
+                width: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0.2em;
+                position:relative;
+            }
+            .chars #chars-popup{
+                top: 50%;
+                left: 50%;
+                z-index:20;
+                background-color:black;
+                border:black solid 2px;
+                color:white;
+                position:absolute;
+                align-items: center;
+                justify-content: center;
+                margin: 0.2em;
             }
             .monsters{
-                z-index:13
+                z-index:13;
             }
         `
+    }
+
+    drawPlayer(player){
+        return html`<div>
+                        ${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}
+                    </div>`
+    }
+
+    showPlayers(){
+        let popup = this.shadowRoot.getElementById('chars-popup');
+        if(popup){
+            popup.hidden = false;
+        }
+    }
+
+    hidePlayers(){
+        let popup = this.shadowRoot.getElementById('chars-popup');
+        if(popup){
+            popup.hidden = true;
+        }
     }
 
     _render({ userid, pos, gameid}) {
@@ -907,18 +950,30 @@ class GameCell extends BaseEfsElement {
                 }   
                 }, html`<div>loading...<div>`)}
         </div>
-        <div class="chars">
             ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`, {
                 orderByChild: "position",
                 equalTo: pos
-            }), cell => {
+            }), players => {
                 try{
-                    cell = Object.values(cell)[0];
-                    return html`<img alt="${pos}" src="src/img/game/tiles/${cell.img}">`
+                    if(!Array.isArray(players)){
+                        players = Object.values(players);
+                    }
+                    for (var i = 0; i < players.length; i++) {
+                        if (players[i] === undefined) {         
+                            players.splice(i, 1);
+                            i--;
+                        }
+                    }
+                    return html`<div class="chars" on-mouseenter="${e => this.showPlayers(e.detail)}" on-mouseleave="${e => this.hidePlayers(e.detail)}">
+                                    ${players.length}
+                                    <div id="chars-popup" hidden>
+                                        ${players.map(player=>this.drawPlayer(player))}
+                                    </div>
+                                </div>`
                 }catch(e){
-                    return html`<img alt="${pos}" src="src/img/game/tiles/empty.png">`
+                    return html``
                 }   
-                }, html`<div>loading...<div>`)}
+                }, html`<div class="chars">...</div>`)}
         </div>
         `
     }

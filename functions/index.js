@@ -42,7 +42,7 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
                 if(actual < max){
                     actual++;
                     let player = {
-                        position:'6/6',
+                        pos:'6/6',
                         uid: uid,
                         sight:5
                     }

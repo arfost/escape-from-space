@@ -6,7 +6,21 @@
       ".indexOn": ["game"]
     },
     "games": {
-      ".indexOn": ["status"]
+      ".indexOn": ["status"],
+      "$gameId": {
+        "chat": {
+          ".indexOn": ["date"]
+        },
+        "cells":{
+          ".indexOn": ["pos"]
+        },
+        "players":{
+          ".indexOn": ["pos"]
+        },
+        "items":{
+          ".indexOn": ["pos"]
+        }
+      }
     },
     "lobby": {
       "chat": {
