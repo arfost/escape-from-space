@@ -799,6 +799,20 @@ class EfsPlayground extends BaseEfsElement {
         `
     }
 
+    showConfirm(actionName) {
+        let popup = this.shadowRoot.getElementById('confirm-popup-'+actionName);
+        if (popup) {
+            popup.hidden = false;
+        }
+    }
+
+    hideConfirm() {
+        let popup = this.shadowRoot.getElementById('confirm-popup-'+actionName);
+        if (popup) {
+            popup.hidden = true;
+        }
+    }
+
     _render({ userid, gameid }) {
         console.log("render map : ", userid, gameid)
         if (!userid || !gameid) {
@@ -822,7 +836,7 @@ class EfsPlayground extends BaseEfsElement {
                         return html`Error getting the player, try to reload.`
                     }
                     //here we draw the map from the player pos and sigth
-                    let [x, y] = player.position.split('/');
+                    let [x, y] = player.pos.split('/');
                     let minX = Number(x) - Number(player.sight);
                     let maxX = Number(x) + Number(player.sight);
                     let minY = Number(y) - Number(player.sight);
@@ -844,7 +858,10 @@ class EfsPlayground extends BaseEfsElement {
             }, html`<div>loading...<div>`)}
         </div>
         <div class="action">
-            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/actions/${userid}`), actions => (actions ? actions : []).map(action => this.drawAction(action)), html`<div>loading...<div>`)}
+            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/actions/${userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" on-click="${e => this.showConfirm(action.name)}">
+                                                                                                                                                ${action.name}
+                                                                                                                                                <action-confirm-popup action="${action}" id="confirm-popup-${action.name}" on-closepopup="${e => this.hideConfirm(action.name)}"></action-confirm-popup>
+                                                                                                                                            </div>`), html`<div>loading...<div>`)}
         </div>
         `
     }
@@ -861,7 +878,7 @@ class GameCell extends BaseEfsElement {
         return {
             pos: String,
             userid: String,
-            gameid:String
+            gameid: String
         }
     }
 
@@ -909,27 +926,27 @@ class GameCell extends BaseEfsElement {
         `
     }
 
-    drawPlayer(player){
+    drawPlayer(player) {
         return html`<div>
-                        ${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}
-                    </div>`
+    ${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}
+</div>`
     }
 
-    showPlayers(){
+    showPlayers() {
         let popup = this.shadowRoot.getElementById('chars-popup');
-        if(popup){
+        if (popup) {
             popup.hidden = false;
         }
     }
 
-    hidePlayers(){
+    hidePlayers() {
         let popup = this.shadowRoot.getElementById('chars-popup');
-        if(popup){
+        if (popup) {
             popup.hidden = true;
         }
     }
 
-    _render({ userid, pos, gameid}) {
+    _render({ userid, pos, gameid }) {
         if (!userid || !pos || !gameid) {
             return html`loading...`
         }
@@ -942,24 +959,24 @@ class GameCell extends BaseEfsElement {
                 orderByChild: "pos",
                 equalTo: pos
             }), cell => {
-                try{
+                try {
                     cell = Object.values(cell)[0];
                     return html`<img alt="${pos}" src="src/img/game/tiles/${cell.img}">`
-                }catch(e){
+                } catch (e) {
                     return html`<img alt="${pos}" src="src/img/game/tiles/empty.png">`
-                }   
-                }, html`<div>loading...<div>`)}
+                }
+            }, html`<div>loading...<div>`)}
         </div>
             ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`, {
-                orderByChild: "position",
+                orderByChild: "pos",
                 equalTo: pos
             }), players => {
-                try{
-                    if(!Array.isArray(players)){
+                try {
+                    if (!Array.isArray(players)) {
                         players = Object.values(players);
                     }
                     for (var i = 0; i < players.length; i++) {
-                        if (players[i] === undefined) {         
+                        if (players[i] === undefined) {
                             players.splice(i, 1);
                             i--;
                         }
@@ -967,13 +984,97 @@ class GameCell extends BaseEfsElement {
                     return html`<div class="chars" on-mouseenter="${e => this.showPlayers(e.detail)}" on-mouseleave="${e => this.hidePlayers(e.detail)}">
                                     ${players.length}
                                     <div id="chars-popup" hidden>
-                                        ${players.map(player=>this.drawPlayer(player))}
+                                        ${players.map(player => this.drawPlayer(player))}
                                     </div>
                                 </div>`
-                }catch(e){
+                } catch (e) {
                     return html``
-                }   
-                }, html`<div class="chars">...</div>`)}
+                }
+            }, html`<div class="chars">...</div>`)}
+        `
+    }
+}
+
+class GameCell extends BaseEfsElement {
+    static get is() { return 'action-confirm-popup' }
+    //we need to init values in constructor
+    constructor() {
+        super();
+    }
+
+    static get properties() {
+        return {
+            action: Object,
+            selectedOption:Number
+        }
+    }
+
+    get selfStyle() {
+        return `
+        .backdrop{
+            z-index:100;
+            position:absolute;
+            background-color:black;
+            justify-content:center;
+            width:100%;
+            height:100vh;
+            position:fixed;
+            top:0;
+            left:0;
+            opacity:0.5;
+        }
+        .backdrop > div{
+            z-index:101;
+            padding:1em;
+            background-color:white;
+            border: 0.1em solid red;
+        }
+
+        .backdrop > div{
+            margin:0.5em;
+        }
+        `
+    }
+
+    cancel() {
+        this.dispatchEvent(new CustomEvent('closepopup', { detail: { cancel: true } }))
+    }
+
+    validate() {
+        if(selected !==undefined || !action.options){
+            this.dispatchEvent(new CustomEvent('execute-action',{ detail: { option: this.selected } }))
+            this.dispatchEvent(new CustomEvent('closepopup',{ detail: { confirm: true } }))
+        }
+        
+    }
+    select(id){
+        this.selected = id;
+    }
+
+    drawOptions(action){
+        if(action.options){
+            return html`<div>${action.options.map((option, index)=>html`<div on-click="${e => this.select(index)}">${option.name}</div>`)}</div>`
+        }
+        return html``
+    }
+
+    _render({ action, selected }) {
+        if (!action) {
+            return html`loading...`
+        }
+        return html`
+        <style>
+            ${this.selfStyle}
+        </style>
+        <div class="backdrop content-box">
+            <div >
+                <div >${action.name}</div>
+                ${this.drawOptions(action)}
+                <div>
+                    <button on-click="${e => this.cancel(e)}">cancel</button>
+                    <button on-click="${e => this.validate(e)}" disabled$="${(selected ===undefined && action.options)}">validate</button>
+                </div>
+            </div>
         </div>
         `
     }
