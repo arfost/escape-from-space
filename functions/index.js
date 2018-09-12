@@ -1,5 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+
+const efs = require('glWrapper.js')
+
 admin.initializeApp();
 
 exports.manageUserGame = functions.database.ref('/users/{id}/game')
@@ -9,7 +12,6 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
         const original = snapshot.after.val();
         const uid = context.params.id;
 
-        console.log(context.auth, uid)
         if (context.auth !== undefined && uid !== context.auth.uid) {
             return admin.database().ref('/strangeActs/').push().set({
                 writerUid: context.auth.uid,
@@ -41,11 +43,9 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
                 let max = Number(game.playersNb.split('/')[1]);
                 if(actual < max){
                     actual++;
-                    let player = {
-                        pos:'6/6',
-                        uid: uid,
-                        sight:5
-                    }
+                    let player = efs.player.createChar({})
+                    player.pos = efs.game.getStartingPos(game)
+                    player.uid = uid;
                     game.playersNb = actual+'/'+max;
                     if(Array.isArray(game.players)){
                         game.players.push(player);
@@ -63,4 +63,23 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
                 }
             });
         }
+    });
+
+exports.playAction = functions.database.ref('user/{id}/action')
+    .onUpdate((snapshot, context)=>{
+        // Grab the current value of what was written to the Realtime Database.
+
+        const original = snapshot.after.val();
+        const uid = context.params.id;
+
+        if (context.auth !== undefined && uid !== context.auth.uid) {
+            return admin.database().ref('/strangeActs/').push().set({
+                writerUid: context.auth.uid,
+                uid: uid,
+                value: original,
+            })
+        }
+        
+
+
     });

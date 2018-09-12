@@ -959,8 +959,8 @@ class GameCell extends BaseEfsElement {
                 orderByChild: "pos",
                 equalTo: pos
             }), cell => {
-                try {
-                    cell = Object.values(cell)[0];
+                try{
+                    [cell] = [Object.values(cell)];
                     return html`<img alt="${pos}" src="src/img/game/tiles/${cell.img}">`
                 } catch (e) {
                     return html`<img alt="${pos}" src="src/img/game/tiles/empty.png">`
@@ -1041,7 +1041,7 @@ class GameCell extends BaseEfsElement {
     }
 
     validate() {
-        if(selected !==undefined || !action.options){
+        if(this.selected !==undefined || !this.action.options){
             this.dispatchEvent(new CustomEvent('execute-action',{ detail: { option: this.selected } }))
             this.dispatchEvent(new CustomEvent('closepopup',{ detail: { confirm: true } }))
         }
