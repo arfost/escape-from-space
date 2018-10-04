@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-const efs = require('glWrapper.js')
+const efs = require('./glwrapper.js')
 
 admin.initializeApp();
 
@@ -20,7 +20,7 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
             })
         }
         if(original === false){
-            return
+            return 0
         }
         if(original.includes('new')){
             return admin.database().ref('gameRef').once("value").then(snap => {
@@ -32,9 +32,7 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
                 value.status = "waiting";
                 value.playersNb = '0/2';
                 value.players = [];
-                return ref.set(value).then(()=>{
-                    return snapshot.after.ref.set(value.key)
-                })
+                return ref.set(value).then(()=>snapshot.after.ref.set(value.key))
             })
         }else{
             return admin.database().ref('games/'+original).once('value',snap=>{
@@ -56,6 +54,8 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
                     }
                     if(actual === max){
                         game.status = "launched"
+                        console.log(game.players)
+                        game = efs.game.initGame(game);
                     }
                     return admin.database().ref('games/'+original).set(game)
                 }else{
@@ -80,6 +80,6 @@ exports.playAction = functions.database.ref('user/{id}/action')
             })
         }
         
-
-
+        console.log("player is playing action ", original)
+        return 0;
     });

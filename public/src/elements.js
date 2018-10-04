@@ -23,7 +23,7 @@ export const onFirebaseArray = (ref, content, defaultContent, emptyContent) => d
             if(!Array.isArray(data)){
                 data = Object.values(data);
             }
-            part.setValue(content(data));
+            part.setValue(content(data.filter(elem=>elem)));
         }else if(emptyContent){
             part.setValue(emptyContent);
           }
@@ -309,21 +309,19 @@ class ConfAccountPopup extends BaseEfsElement {
             .backdrop{
                 z-index:100;
                 position:absolute;
-                background-color:black;
+                background-color: rgba(0,0,0,0.6);
                 justify-content:center;
                 width:100%;
                 height:100vh;
                 position:fixed;
                 top:0;
                 left:0;
-                opacity:0.5;
             }
             .backdrop > div{
                 z-index:101;
                 padding:1em;
                 background-color:white;
                 border: 0.1em solid red;
-                opacity:1;
             }
 
             .backdrop > div{
@@ -826,17 +824,22 @@ class EfsPlayground extends BaseEfsElement {
     }
 
     showConfirm(actionName) {
-        let popup = this.shadowRoot.getElementById('confirm-popup-'+actionName);
+        let popup = this.shadowRoot.getElementById(`confirm-popup-${actionName}`);
         if (popup) {
-            popup.hidden = false;
+            popup.hidden = false
         }
     }
 
     hideConfirm(actionName) {
-        let popup = this.shadowRoot.getElementById('confirm-popup-'+actionName);
+        
+        let popup = this.shadowRoot.getElementById(`confirm-popup-${actionName}`);
         if (popup) {
-            popup.hidden = true;
+            popup.hidden = true
         }
+    }
+
+    playAction(action){
+        console.log("action played ", action)
     }
 
     render() {
@@ -851,7 +854,7 @@ class EfsPlayground extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="map">
-            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/players`, {
+            ${onFirebaseArray(this.firebaseRef(`/games/${this.gameid}/players`, {
                 orderByChild: "uid",
                 equalTo: this.userid
             }), players => {
@@ -885,9 +888,9 @@ class EfsPlayground extends BaseEfsElement {
         </div>
         <div class="action">
             ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/actions/${this.userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" @click="${() => this.showConfirm(action.name)}">
-                                                                                                                                                ${action.name}
-                                                                                                                                                <action-confirm-popup action="${action}" id="confirm-popup-${action.name}" @closepopup="${() => this.hideConfirm(action.name)}"></action-confirm-popup>
-                                                                                                                                            </div>`), html`<div>loading...<div>`)}
+                                                                                                                                                ${action.name}</div>
+                                                                                                                                                <action-confirm-popup .action="${action}" @closepopup="${() => this.hideConfirm(action.name)}" @execute-action="${(e) => this.playAction(e.detail)}" id="confirm-popup-${action.name}" hidden></action-confirm-popup>
+                                                                                                                                            `), html`<div>loading...<div>`)}
         </div>
         `
     }
@@ -910,8 +913,12 @@ class GameCell extends BaseEfsElement {
 
     get selfStyle() {
         return `
+            :host{
+                position:relative
+            }
             .construct{
-                z-index:10
+                z-index:10;
+                position:absolute;
             }
             .construct img{
                 width:100%;
@@ -932,7 +939,7 @@ class GameCell extends BaseEfsElement {
                 align-items: center;
                 justify-content: center;
                 margin: 0.2em;
-                position:relative;
+                position:absolute;
             }
             .chars #chars-popup{
                 top: 50%;
@@ -981,42 +988,28 @@ class GameCell extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="construct">
-            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/cells`, {
+            ${onFirebaseArray(this.firebaseRef(`/games/${this.gameid}/cells`, {
                 orderByChild: "pos",
                 equalTo: this.pos
-            }), cell => {
+            }), cells => {
                 try{
-                    [cell] = [Object.values(cell)];
+                    let [cell] = cells;
                     return html`<img alt="${this.pos}" src="src/img/game/tiles/${cell.img}">`
                 } catch (e) {
                     return html`<img alt="${this.pos}" src="src/img/game/tiles/empty.png">`
                 }
             }, html`<div>loading...<div>`)}
         </div>
-            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/players`, {
+            ${onFirebaseArray(this.firebaseRef(`/games/${this.gameid}/players`, {
                 orderByChild: "pos",
                 equalTo: this.pos
-            }), players => {
-                try {
-                    if (!Array.isArray(players)) {
-                        players = Object.values(players);
-                    }
-                    for (var i = 0; i < players.length; i++) {
-                        if (players[i] === undefined) {
-                            players.splice(i, 1);
-                            i--;
-                        }
-                    }
-                    return html`<div class="chars" @mouseenter="${e => this.showPlayers(e.detail)}" @mouseleave="${e => this.hidePlayers(e.detail)}">
+            }), players => html`<div class="chars" @mouseenter="${e => this.showPlayers(e.detail)}" @mouseleave="${e => this.hidePlayers(e.detail)}">
                                     ${players.length}
                                     <div id="chars-popup" hidden>
                                         ${players.map(player => this.drawPlayer(player))}
                                     </div>
                                 </div>`
-                } catch (e) {
-                    return html``
-                }
-            }, html`<div class="chars">...</div>`)}
+            , html`<div class="chars">...</div>`, html``)}
         `
     }
 }
@@ -1031,23 +1024,29 @@ class ActionConfirmPopup extends BaseEfsElement {
     static get properties() {
         return {
             action: Object,
-            selectedOption:Number
+            selected:Number
         }
     }
 
     get selfStyle() {
         return `
+        :host {
+            display: block;
+          }
+          :host([hidden]) {
+            display: none;
+            color:fuschia;
+          }
         .backdrop{
             z-index:100;
             position:absolute;
-            background-color:black;
+            background-color: rgba(0,0,0,0.6);
             justify-content:center;
             width:100%;
             height:100vh;
             position:fixed;
             top:0;
             left:0;
-            opacity:0.5;
         }
         .backdrop > div{
             z-index:101;
@@ -1059,6 +1058,12 @@ class ActionConfirmPopup extends BaseEfsElement {
         .backdrop > div{
             margin:0.5em;
         }
+        .selected{
+            color:red
+        }
+        .norm{
+            color:grey
+        }
         `
     }
 
@@ -1068,18 +1073,18 @@ class ActionConfirmPopup extends BaseEfsElement {
 
     validate() {
         if(this.selected !==undefined || !this.action.options){
-            this.dispatchEvent(new CustomEvent('execute-action',{ detail: { option: this.selected } }))
+            this.dispatchEvent(new CustomEvent('execute-action',{ detail: `${this.action.name}${this.action.opt ? `:${this.action.opt[this.selected]}` : ''}` }))
             this.dispatchEvent(new CustomEvent('closepopup',{ detail: { confirm: true } }))
         }
         
     }
     select(id){
-        this.selected = id;
+        this.selected = Number(id);
     }
 
     drawOptions(action){
-        if(action.options){
-            return html`<div>${action.options.map((option, index)=>html`<div @click="${() => this.select(index)}">${option.name}</div>`)}</div>`
+        if(action.opt){
+            return html`<div>${action.opt.map((option, index)=>html`<div @click="${() => this.select(index)}" class="${this.selected === index ? 'selected' : 'norm'}">${option}</div>`)}</div>`
         }
         return html``
     }
@@ -1098,7 +1103,7 @@ class ActionConfirmPopup extends BaseEfsElement {
                 ${this.drawOptions(this.action)}
                 <div>
                     <button @click="${e => this.cancel(e)}">cancel</button>
-                    <button @click="${e => this.validate(e)}" disabled="${(this.selected ===undefined && this.action.options)}">validate</button>
+                    <button @click="${e => this.validate(e)}" ?disabled="${Boolean(this.selected === undefined && this.action.opt)}">validate</button>
                 </div>
             </div>
         </div>`

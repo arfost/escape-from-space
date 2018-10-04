@@ -4,9 +4,11 @@ class MoveAction {
     }
 
     getPlayer(game, uid){
-        let [player] = [game.players.filter(player=>{
-            return player.uid === uid;
-        })];
+        if(!game || !game.players){
+            delete game.cells;
+            throw new Error("no players for game :: "+JSON.stringify(game))
+        }
+        let [player] = game.players.filter(player=>player.uid === uid);
         return player;
     }
 
@@ -35,18 +37,22 @@ class MoveAction {
             }
         });
 
+
         if(isPossible.length){
-            return {
+            game.actions[uid].push({
                 name:this.name,
                 opt:isPossible
-            }
-        }else{
-            return false;
+            })
         }
+        return game;
     }
 
     play(game){
         console.log("je suis jouée, et je deplace le monsieur")
+    }
+
+    get name(){
+        return 'move'
     }
 }
 
