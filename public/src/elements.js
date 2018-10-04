@@ -1,14 +1,33 @@
-import { LitElement, html } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import { directive } from 'https://unpkg.com/lit-html@0.10.2/lit-html.js?module';
-//import { until } from 'https://unpkg.com/lit-html@0.10.2/lib/until.js?module';
+import { directive, html } from 'https://unpkg.com/lit-html@latest/lit-html.js?module';
+import { LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 
-export const onFirebasedata = (ref, content, defaultContent) => directive(part => {
+
+export const onFirebaseData = (ref, content, defaultContent, emptyContent) => directive(part => {
     part.setValue(defaultContent);
     ref.on("value", snap => {
         let data = snap.val();
-        if (data !== undefined) {
+        if (data !== undefined && data !== null) {
             part.setValue(content(data))
+        }else if(emptyContent){
+          part.setValue(emptyContent);
         }
+        part.commit();
+    })
+    
+});
+export const onFirebaseArray = (ref, content, defaultContent, emptyContent) => directive(part => {
+    part.setValue(defaultContent);
+    ref.on("value", snap => {
+        let data = snap.val();
+        if(data){
+            if(!Array.isArray(data)){
+                data = Object.values(data);
+            }
+            part.setValue(content(data));
+        }else if(emptyContent){
+            part.setValue(emptyContent);
+          }
+          part.commit();
     })
 });
 
@@ -19,6 +38,10 @@ class BaseEfsElement extends LitElement {
 
     static get is() {
         throw new Error("getter is must be overidden with the name of the element")
+    }
+
+    get is(){
+        return this.constructor.is
     }
 
     firebaseData(path, cb, params = []) {
@@ -110,6 +133,10 @@ class LogHeader extends BaseEfsElement {
         super();
         this.showPopup = false;
         firebase.auth().getRedirectResult().then((result) => {
+            console.log(result)
+            if(!result || !result.credential){
+                return
+            }
             this.token = result.credential.accessToken;
             this.firebaseData(`/users/${result.user.uid}`, (data) => {
                 this.user = data;
@@ -117,7 +144,7 @@ class LogHeader extends BaseEfsElement {
             this.email = result.user.email;
             this.uid = result.user.uid;
         }).catch((error) => {
-            //
+            console.log("auth error ", error)
         });
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
@@ -203,7 +230,7 @@ class LogHeader extends BaseEfsElement {
 
     content(user) {
         if (user) {
-            return html`<efs-shell user="${user}"></efs-shell>`
+            return html`<efs-shell .user="${user}"></efs-shell>`
         } else {
             return html`first login and configure your account before playing`
         }
@@ -226,7 +253,8 @@ class LogHeader extends BaseEfsElement {
             this.showPopup = false;
         })
     }
-    _render({ user, token, logError, email, showPopup }) {
+
+    render() {
         return html`
         <style>
             ${this.appTheme}
@@ -235,26 +263,26 @@ class LogHeader extends BaseEfsElement {
         </style>
         <div class="header content-box">
             <div>
-            <div on-click="${() => {
+            <div @click="${() => {
                 this.showPopup = true
             }}">conf</div>
                 ${
-            (showPopup ?
-                html`<conf-account-popup title="Configure account"  on-validate="${e => this.confUser(e.detail)}"></conf-account-popup>` :
+            (this.showPopup ?
+                html`<conf-account-popup title="Configure account"  @validate="${e => this.confUser(e.detail)}"></conf-account-popup>` :
                 html``
             )
             }
                 
-                ${(user ? html`
-                    <img class="avatar" src$="${user.avatar}">
-                    <div>${user.name}</div>
+                ${(this.user ? html`
+                    <img class="avatar" src="${this.user.avatar}">
+                    <div>${this.user.name}</div>
                 `:
-                (email ? 'configure your account before playing' : 'login with google to play'))}
+                (this.email ? 'configure your account before playing' : 'login with google to play'))}
             </div>
-            <div class="accountInfos"><span>${email}</span><button class='button' on-click="${e => this.toggleLogin(e)}">${email ? 'log out' : 'log in'}</button></div>
+            <div class="accountInfos"><span>${this.email}</span><button class='button' @click="${e => this.toggleLogin(e)}">${this.email ? 'log out' : 'log in'}</button></div>
         </div>
         <div style="margin-top:8em">
-            ${this.content(user)}
+            ${this.content(this.user)}
         </div>
         <div class="footer content-box">
             realised by arfost
@@ -295,6 +323,7 @@ class ConfAccountPopup extends BaseEfsElement {
                 padding:1em;
                 background-color:white;
                 border: 0.1em solid red;
+                opacity:1;
             }
 
             .backdrop > div{
@@ -317,7 +346,7 @@ class ConfAccountPopup extends BaseEfsElement {
         }))
     }
 
-    _render({ title }) {
+    render() {
         return html`
         <style>
             ${this.appTheme}
@@ -326,7 +355,7 @@ class ConfAccountPopup extends BaseEfsElement {
         </style>
         <div class="backdrop content-box">
             <div >
-                <div >${title}</div>
+                <div >${this.title}</div>
                 <div>
                     <div>
                         <label for="name">Name:</label>
@@ -334,8 +363,8 @@ class ConfAccountPopup extends BaseEfsElement {
                     </div>
                 </div>
                 <div>
-                    <button on-click="${e => this.cancel(e)}">cancel</button>
-                    <button on-click="${e => this.validate(e)}">validate</button>
+                    <button @click="${e => this.cancel(e)}">cancel</button>
+                    <button @click="${e => this.validate(e)}">validate</button>
                 </div>
             </div>
         </div>
@@ -364,7 +393,8 @@ class EfsShell extends BaseEfsElement {
         `
     }
 
-    _render({ user }) {
+    render() {
+        console.log(this.is, JSON.stringify(this.user, null, 4))
         return html`
         <style>
             ${this.appTheme}
@@ -372,10 +402,10 @@ class EfsShell extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="efs-shell">
-            ${(user ?
-                (user.game ?
-                    html`<efs-game userid$='${user.uid}' gameid$="${user.game}"></efs-game>` :
-                    html`<efs-lobby userid$="${user.uid}"></efs-lobby>`) :
+            ${(this.user ?
+                (this.user.game ?
+                    html`<efs-game userid='${this.user.uid}' gameid="${this.user.game}"></efs-game>` :
+                    html`<efs-lobby userid="${this.user.uid}"></efs-lobby>`) :
                 html`loading`
             )
             }
@@ -429,7 +459,8 @@ class EfsLobby extends BaseEfsElement {
         `
     }
 
-    _render({ userid, playerList }) {
+    render() {
+        console.log(this.is, this.userid)
         return html`
         <style>
             ${this.appTheme}
@@ -439,11 +470,11 @@ class EfsLobby extends BaseEfsElement {
         <div class="lobby content-box horizontal">
             <div>
                 <div class="player-list content-box vertical">
-                    ${playerList.map(player => this.playerRow(player))}
+                    ${this.playerList.map(player => this.playerRow(player))}
                 </div>
-                <partie-select userid="${userid}"></partie-select>
+                <partie-select userid="${this.userid}"></partie-select>
             </div>
-                <game-chat type="/lobby/chat" userid="${userid}"></game-chat>
+                <game-chat type="/lobby/chat" userid="${this.userid}"></game-chat>
             </div>
         </div>
         `
@@ -487,9 +518,10 @@ class GameChat extends BaseEfsElement {
     }
 
     message(message, userid) {
+        console.log("niouk ? pouet")
         return html`
             <div class="content-box horizontal messages">
-                <span class$="${message.posterId === userid ? 'green' : 'grey'}">${onFirebasedata(this.firebaseRef(`/users/${message.posterId}/name`), (name => html`${name}`), html`loading...`)}</span>
+                <span class="${message.posterId === userid ? 'green' : 'grey'}">${onFirebaseData(this.firebaseRef(`/users/${message.posterId}/name`), (name => html`${name}`), html`loading...`)}</span>
                 :
                 <span>${message.text}</span>
             </div>
@@ -508,37 +540,32 @@ class GameChat extends BaseEfsElement {
         }
     }
 
-    _render({ userid, messages, type }) {
-        if (type && !this.requestDone) {
-            this.firebaseData(`${type}`, data => {
-                if (data) {
-                    this.messages = Object.values(data);
-                }
-            }, {
-                    orderByChild: "date",
-                    limitToLast: 50
-                });
-            this.requestDone = true;
-        }
-        return html`
-        <style>
-            ${this.appTheme}
-            ${this.sharedStyles}
-            ${this.selfStyle}
-        </style>
-        <div class="content-box vertical">
-            <div>
-                <div class="player-list content-box vertical">
-                    ${messages.map(message => this.message(message, userid))}
+    render() {
+        console.log(this.is, this.userid)
+        if(this.type && this.userid){
+            return html`
+                <style>
+                    ${this.appTheme}
+                    ${this.sharedStyles}
+                    ${this.selfStyle}
+                </style>
+                <div class="content-box vertical">
+                    <div>
+                        <div class="player-list content-box vertical">
+                            ${onFirebaseArray(this.firebaseRef(this.type),messages=>messages.map(message=>this.message(message, this.userid)), html`loading messages...`, html`no messages yet`)}
+                        </div>
+                    </div>
+                    <div class="content-box horizontal">
+                        <label for="message">Message:</label>
+                        <input type="text" id="message" name="message" style="width:70%">
+                        <button class="button" @click="${e => this.send(e)}">send</button>
+                    </div>
                 </div>
-            </div>
-            <div class="content-box horizontal">
-                <label for="message">Message:</label>
-                <input type="text" id="message" name="message" style="width:70%">
-                <button class="button" on-click="${e => this.send(e)}">send</button>
-            </div>
-        </div>
-        `
+                `
+        }else{
+            return html``
+        }
+        
     }
 }
 
@@ -585,8 +612,8 @@ class PartieSelect extends BaseEfsElement {
         return html`
             <div class="content-box vertical">
                 <div>
-                    <span>${game.name} (${onFirebasedata(this.firebaseRef(`/users/${game.creatorId}/name`), name => html`${name}`, html`loading...`)})</span>
-                    <button class="button" on-click="${(() => this.joinGame(game.key))}">join</button>
+                    <span>${game.name} (${onFirebaseData(this.firebaseRef(`/users/${game.creatorId}/name`), name => html`${name}`, html`loading...`)})</span>
+                    <button class="button" @click="${(() => this.joinGame(game.key))}">join</button>
                 </div>
                 <div>${game.playersNb}</div>
             </div>
@@ -606,7 +633,7 @@ class PartieSelect extends BaseEfsElement {
         }
     }
 
-    _render({ userid, games }) {
+    render() {
         return html`
         <style>
             ${this.appTheme}
@@ -616,13 +643,13 @@ class PartieSelect extends BaseEfsElement {
         <div class="content-box vertical">
             <div>
                 <div class="player-list content-box vertical">
-                    ${games.map(game => this.game(game, userid))}
+                    ${this.games.map(game => this.game(game, this.userid))}
                 </div>
             </div>
             <div class="content-box horizontal">
                 <label for="game-name">New game:</label>
                 <input type="text" id="game-name" name="game-name" style="width:70%">
-                <button class="button" on-click="${e => this.creaGame(e)}">create</button>
+                <button class="button" @click="${e => this.creaGame(e)}">create</button>
             </div>
         </div>
         `
@@ -654,7 +681,7 @@ class EfsGame extends BaseEfsElement {
     get errorScreen() {
         return html`
             <span class="error">An error occured joining the game. The game was probably joined by someone just before you</span>
-            <button class="button" on-click="${(() => this.firebaseSet(`/users/${this.userid}/game`, false))}">Return to lobby</button>
+            <button class="button" @click="${(() => this.firebaseSet(`/users/${this.userid}/game`, false))}">Return to lobby</button>
         `
     }
 
@@ -663,7 +690,6 @@ class EfsGame extends BaseEfsElement {
             <span class="error">Your game is being created, please wait you will automatically join it when it's done</span>
         `
     }
-
 
 
     chooseState(gameid, userid) {
@@ -676,7 +702,7 @@ class EfsGame extends BaseEfsElement {
         return html`<efs-game-screen userid="${userid}" gameid="${gameid}"></efs-game-screen>`;
     }
 
-    _render({ userid, gameid }) {
+    render() {
         return html`
         <style>
             ${this.appTheme}
@@ -684,7 +710,7 @@ class EfsGame extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="efs-game">
-            ${this.chooseState(gameid, userid)}
+            ${this.chooseState(this.gameid, this.userid)}
         </div>
         `
     }
@@ -749,7 +775,7 @@ class EfsGameScreen extends BaseEfsElement {
         return this.errorScreen;
     }
 
-    _render({ userid, gameid }) {
+    render() {
         return html`
         <style>
             ${this.appTheme}
@@ -760,13 +786,13 @@ class EfsGameScreen extends BaseEfsElement {
             <div class="content-box vertical">
                 <div>
                     <div class="content-box vertical">
-                        ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`), players => (players ? players : []).map(player => html`<div>${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}</div>`), html`<div>loading...<div>`)}
+                        ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/players`), players => (players ? players : []).map(player => html`<div>${onFirebaseData(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}</div>`), html`<div>loading...<div>`)}
                     </div>
                     <div>
-                        ${onFirebasedata(this.firebaseRef(`/games/${gameid}/status`), this.chooseState.bind(this), html`loading...`)}
+                        ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/status`), this.chooseState.bind(this), html`loading...`)}
                     </div>
                 </div>
-                <game-chat type="/games/${gameid}/chat" userid="${userid}"></game-chat>
+                <game-chat type="/games/${this.gameid}/chat" userid="${this.userid}"></game-chat>
             </div>
         </div>
         `
@@ -806,16 +832,16 @@ class EfsPlayground extends BaseEfsElement {
         }
     }
 
-    hideConfirm() {
+    hideConfirm(actionName) {
         let popup = this.shadowRoot.getElementById('confirm-popup-'+actionName);
         if (popup) {
             popup.hidden = true;
         }
     }
 
-    _render({ userid, gameid }) {
-        console.log("render map : ", userid, gameid)
-        if (!userid || !gameid) {
+    render() {
+        console.log("render map : ", this.userid, this.gameid)
+        if (!this.userid || !this.gameid) {
             return html`loading...`
         }
         return html`
@@ -825,14 +851,14 @@ class EfsPlayground extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="map">
-            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`, {
+            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/players`, {
                 orderByChild: "uid",
-                equalTo: userid
+                equalTo: this.userid
             }), players => {
                 console.log("players return : ", players)
                 if (players && players.length === 1) {
                     let [player] = players;
-                    if (player.uid !== userid) {
+                    if (player.uid !== this.userid) {
                         return html`Error getting the player, try to reload.`
                     }
                     //here we draw the map from the player pos and sigth
@@ -851,16 +877,16 @@ class EfsPlayground extends BaseEfsElement {
                         }
                     }
                     return html`<div style="display:grid;grid-template-columns:repeat(${(Number(player.sight) * 2) + 1}, 1fr)">
-                        ${cells.map(cell => html`<game-cell class="case" userid="${userid}" gameid="${gameid}" pos="${cell.x}/${cell.y}"></game-cell>`)}
+                        ${cells.map(cell => html`<game-cell class="case" userid="${this.userid}" gameid="${this.gameid}" pos="${cell.x}/${cell.y}"></game-cell>`)}
                     </div>`
                 }
                 return html`<div>loading...</div>`
             }, html`<div>loading...<div>`)}
         </div>
         <div class="action">
-            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/actions/${userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" on-click="${e => this.showConfirm(action.name)}">
+            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/actions/${this.userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" @click="${() => this.showConfirm(action.name)}">
                                                                                                                                                 ${action.name}
-                                                                                                                                                <action-confirm-popup action="${action}" id="confirm-popup-${action.name}" on-closepopup="${e => this.hideConfirm(action.name)}"></action-confirm-popup>
+                                                                                                                                                <action-confirm-popup action="${action}" id="confirm-popup-${action.name}" @closepopup="${() => this.hideConfirm(action.name)}"></action-confirm-popup>
                                                                                                                                             </div>`), html`<div>loading...<div>`)}
         </div>
         `
@@ -928,7 +954,7 @@ class GameCell extends BaseEfsElement {
 
     drawPlayer(player) {
         return html`<div>
-    ${onFirebasedata(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}
+    ${onFirebaseData(this.firebaseRef(`/users/${player.uid}/name`), name => name, html`loading...`)}
 </div>`
     }
 
@@ -946,8 +972,8 @@ class GameCell extends BaseEfsElement {
         }
     }
 
-    _render({ userid, pos, gameid }) {
-        if (!userid || !pos || !gameid) {
+    render() {
+        if (!this.userid || !this.pos || !this.gameid) {
             return html`loading...`
         }
         return html`
@@ -955,21 +981,21 @@ class GameCell extends BaseEfsElement {
             ${this.selfStyle}
         </style>
         <div class="construct">
-            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/cells`, {
+            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/cells`, {
                 orderByChild: "pos",
-                equalTo: pos
+                equalTo: this.pos
             }), cell => {
                 try{
                     [cell] = [Object.values(cell)];
-                    return html`<img alt="${pos}" src="src/img/game/tiles/${cell.img}">`
+                    return html`<img alt="${this.pos}" src="src/img/game/tiles/${cell.img}">`
                 } catch (e) {
-                    return html`<img alt="${pos}" src="src/img/game/tiles/empty.png">`
+                    return html`<img alt="${this.pos}" src="src/img/game/tiles/empty.png">`
                 }
             }, html`<div>loading...<div>`)}
         </div>
-            ${onFirebasedata(this.firebaseRef(`/games/${gameid}/players`, {
+            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/players`, {
                 orderByChild: "pos",
-                equalTo: pos
+                equalTo: this.pos
             }), players => {
                 try {
                     if (!Array.isArray(players)) {
@@ -981,7 +1007,7 @@ class GameCell extends BaseEfsElement {
                             i--;
                         }
                     }
-                    return html`<div class="chars" on-mouseenter="${e => this.showPlayers(e.detail)}" on-mouseleave="${e => this.hidePlayers(e.detail)}">
+                    return html`<div class="chars" @mouseenter="${e => this.showPlayers(e.detail)}" @mouseleave="${e => this.hidePlayers(e.detail)}">
                                     ${players.length}
                                     <div id="chars-popup" hidden>
                                         ${players.map(player => this.drawPlayer(player))}
@@ -995,7 +1021,7 @@ class GameCell extends BaseEfsElement {
     }
 }
 
-class GameCell extends BaseEfsElement {
+class ActionConfirmPopup extends BaseEfsElement {
     static get is() { return 'action-confirm-popup' }
     //we need to init values in constructor
     constructor() {
@@ -1053,13 +1079,13 @@ class GameCell extends BaseEfsElement {
 
     drawOptions(action){
         if(action.options){
-            return html`<div>${action.options.map((option, index)=>html`<div on-click="${e => this.select(index)}">${option.name}</div>`)}</div>`
+            return html`<div>${action.options.map((option, index)=>html`<div @click="${() => this.select(index)}">${option.name}</div>`)}</div>`
         }
         return html``
     }
 
-    _render({ action, selected }) {
-        if (!action) {
+    render() {
+        if (!this.action) {
             return html`loading...`
         }
         return html`
@@ -1068,15 +1094,14 @@ class GameCell extends BaseEfsElement {
         </style>
         <div class="backdrop content-box">
             <div >
-                <div >${action.name}</div>
-                ${this.drawOptions(action)}
+                <div >${this.action.name}</div>
+                ${this.drawOptions(this.action)}
                 <div>
-                    <button on-click="${e => this.cancel(e)}">cancel</button>
-                    <button on-click="${e => this.validate(e)}" disabled$="${(selected ===undefined && action.options)}">validate</button>
+                    <button @click="${e => this.cancel(e)}">cancel</button>
+                    <button @click="${e => this.validate(e)}" disabled="${(this.selected ===undefined && this.action.options)}">validate</button>
                 </div>
             </div>
-        </div>
-        `
+        </div>`
     }
 }
 
@@ -1090,5 +1115,6 @@ export default [
     EfsGame,
     EfsGameScreen,
     EfsPlayground,
-    GameCell
+    GameCell,
+    ActionConfirmPopup
 ]
