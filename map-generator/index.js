@@ -30,15 +30,15 @@ let corners = [
 let rows = [];
 for(let i = 1; i<mapConfig.width; i++){
     rows.push({
-        x:0,
-        y:i,
+        x:i,
+        y:0,
         type:"wall-eo"
     })
 }
 for(let i = 1; i<mapConfig.width; i++){
     rows.push({
-        x:mapConfig.heigth,
-        y:i,
+        x:i,
+        y:mapConfig.heigth,
         type:"wall-eo"
     })
 }
@@ -46,15 +46,15 @@ for(let i = 1; i<mapConfig.width; i++){
 let columns = [];
 for(let i = 1; i<mapConfig.heigth; i++){
     columns.push({
-        x:i,
-        y:0,
+        x:0,
+        y:i,
         type:"wall-ns"
     })
 }
 for(let i = 1; i<mapConfig.heigth; i++){
     columns.push({
-        x:i,
-        y:mapConfig.width,
+        x:mapConfig.width,
+        y:i,
         type:"wall-ns"
     })
 }

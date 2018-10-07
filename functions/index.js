@@ -65,8 +65,8 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
         }
     });
 
-exports.playAction = functions.database.ref('user/{id}/action')
-    .onUpdate((snapshot, context)=>{
+exports.playAction = functions.database.ref('users/{id}/action')
+    .onWrite((snapshot, context)=>{
         // Grab the current value of what was written to the Realtime Database.
 
         const original = snapshot.after.val();
@@ -81,5 +81,11 @@ exports.playAction = functions.database.ref('user/{id}/action')
         }
         
         console.log("player is playing action ", original)
-        return 0;
+        return snapshot.after.ref.parent.once('value', snap=>{
+            let user = snap.val();
+            return admin.database().ref('games/'+user.game).once('value', snap=>{
+                let game = snap.val()
+                return admin.database().ref('games/'+user.game).set(efs.game.playAction(game, uid, original));
+            })
+        });
     });

@@ -1,4 +1,4 @@
-import {BaseEfsElement} from '../abstract-elements/efs-base-element.js'
+import { BaseEfsElement } from '../abstract-elements/efs-base-element.js'
 import { html } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 
 export class LogHeader extends BaseEfsElement {
@@ -8,7 +8,7 @@ export class LogHeader extends BaseEfsElement {
         super();
         this.showPopup = false;
         firebase.auth().getRedirectResult().then((result) => {
-            if(!result || !result.credential){
+            if (!result || !result.credential) {
                 return
             }
             this.token = result.credential.accessToken;

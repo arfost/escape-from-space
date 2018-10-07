@@ -1,6 +1,6 @@
 
-import {onFirebaseArray, onFirebaseData} from '../helper-scripts/lit-directiv.js'
-import {BaseEfsElement} from '../abstract-elements/efs-base-element.js'
+import { onFirebaseArray, onFirebaseData } from '../helper-scripts/lit-directiv.js'
+import { BaseEfsElement } from '../abstract-elements/efs-base-element.js'
 import { html } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 
 export class GameCell extends BaseEfsElement {
@@ -99,13 +99,11 @@ export class GameCell extends BaseEfsElement {
                 orderByChild: "pos",
                 equalTo: this.pos
             }), cells => {
-                try{
-                    let [cell] = cells;
-                    return html`<img alt="${this.pos}" src="src/img/game/tiles/${cell.img}">`
-                } catch (e) {
-                    return html`<img alt="${this.pos}" src="src/img/game/tiles/empty.png">`
-                }
-            }, html`<div>loading...<div>`)}
+                let [cell] = cells;
+                return html`<img alt="${this.pos}" src="src/img/game/tiles/${cell.img}">`
+
+            }, html`<div>loading...<div>`,
+            html`<img alt="${this.pos}" src="src/img/game/tiles/empty.png">`)}
         </div>
             ${onFirebaseArray(this.firebaseRef(`/games/${this.gameid}/players`, {
                 orderByChild: "pos",
@@ -116,7 +114,7 @@ export class GameCell extends BaseEfsElement {
                                         ${players.map(player => this.drawPlayer(player))}
                                     </div>
                                 </div>`
-            , html`<div class="chars">...</div>`, html``)}
+                , html`<div class="chars">...</div>`, html``)}
         `
     }
 }

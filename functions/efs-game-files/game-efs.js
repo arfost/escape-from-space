@@ -10,12 +10,12 @@ export function playAction(game, uid, action){
 
     let actionClass = actions[actionType];
 
-    game = actionClass.play(game, uid);
+    game = actionClass.play(game, uid, actionOpt);
 
-    game = moveZomb(game, uid);
+    //game = moveZomb(game, uid);
 
-    for(let ac in actions){
-        game = ac.isPlayable(game, uid)
+    for(let player of game.players){
+        game = getPlayableActionsForPlayer(game, player.uid)
     }
 
     return game;
@@ -24,7 +24,6 @@ export function playAction(game, uid, action){
 export function initGame(game){
     for(let player of game.players){
         game = getPlayableActionsForPlayer(game, player.uid)
-        
     }
     return game;
 }

@@ -56,12 +56,14 @@ export class ActionConfirmPopup extends BaseEfsElement {
 
     cancel() {
         this.dispatchEvent(new CustomEvent('closepopup', { detail: { cancel: true } }))
+        this.selected = undefined;
     }
 
     validate() {
         if(this.selected !==undefined || !this.action.options){
-            this.dispatchEvent(new CustomEvent('execute-action',{ detail: `${this.action.name}${this.action.opt ? `:${this.action.opt[this.selected]}` : ''}` }))
+            this.dispatchEvent(new CustomEvent('play-action',{ detail: `${this.action.name}${this.action.opt ? `:${this.action.opt[this.selected]}` : ''}` }))
             this.dispatchEvent(new CustomEvent('closepopup',{ detail: { confirm: true } }))
+            this.selected = undefined;
         }
         
     }

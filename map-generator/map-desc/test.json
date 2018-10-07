@@ -6,22 +6,22 @@
     },
     {
         "type":"door-closed-eo",
-        "x":2,
-        "y":3
+        "x":3,
+        "y":2
     },
     {
         "type":"wall-eo",
-        "x":2,
-        "y":4
+        "x":4,
+        "y":2
     },
     {
         "type":"wall-light-eo",
-        "x":2,
-        "y":5
+        "x":5,
+        "y":2
     },
     {
         "type":"wall-end-o",
-        "x":2,
-        "y":6
+        "x":6,
+        "y":2
     }
 ]

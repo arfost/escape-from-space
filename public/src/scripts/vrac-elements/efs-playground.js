@@ -46,10 +46,10 @@ export class EfsPlayground extends BaseEfsElement {
 
     playAction(action){
         console.log("action played ", action)
+        this.firebaseSet(`users/${this.userid}/action`, action);
     }
 
     render() {
-        console.log("render map : ", this.userid, this.gameid)
         if (!this.userid || !this.gameid) {
             return html`loading...`
         }
@@ -64,7 +64,6 @@ export class EfsPlayground extends BaseEfsElement {
                 orderByChild: "uid",
                 equalTo: this.userid
             }), players => {
-                console.log("players return : ", players)
                 if (players && players.length === 1) {
                     let [player] = players;
                     if (player.uid !== this.userid) {
@@ -76,12 +75,13 @@ export class EfsPlayground extends BaseEfsElement {
                     let maxX = Number(x) + Number(player.sight);
                     let minY = Number(y) - Number(player.sight);
                     let maxY = Number(y) + Number(player.sight);
+                    console.log("coord", minX, maxX, minY, maxY, x, y, player.sight);
                     let cells = [];
                     for (let i = minY; i <= maxY; i++) {
                         for (let j = minX; j <= maxX; j++) {
                             cells.push({
-                                x: i,
-                                y: j
+                                x: j,
+                                y: i
                             })
                         }
                     }
@@ -95,7 +95,7 @@ export class EfsPlayground extends BaseEfsElement {
         <div class="action">
             ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/actions/${this.userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" @click="${() => this.showConfirm(action.name)}">
                                                                                                                                                 ${action.name}</div>
-                                                                                                                                                <action-confirm-popup .action="${action}" @closepopup="${() => this.hideConfirm(action.name)}" @execute-action="${(e) => this.playAction(e.detail)}" id="confirm-popup-${action.name}" hidden></action-confirm-popup>
+                                                                                                                                                <action-confirm-popup .action="${action}" @closepopup="${() => this.hideConfirm(action.name)}" @play-action="${(e) => this.playAction(e.detail)}" id="confirm-popup-${action.name}" hidden></action-confirm-popup>
                                                                                                                                             `), html`<div>loading...<div>`)}
         </div>
         `

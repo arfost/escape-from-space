@@ -2,3 +2,5 @@ node_modules
 functions/node_modules
 firebase-debug.log
 .firebase/hosting.0.cache
+map-generator/out
+hosting*

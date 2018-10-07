@@ -47,8 +47,10 @@ class MoveAction {
         return game;
     }
 
-    play(game){
-        console.log("je suis jouée, et je deplace le monsieur")
+    play(game, uid, opt){
+        let player = this.getPlayer(game, uid);
+        player.pos = opt;
+        return game;
     }
 
     get name(){
