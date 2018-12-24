@@ -46,6 +46,7 @@ export class EfsPlayground extends BaseEfsElement {
 
     playAction(action){
         console.log("action played ", action)
+        this.firebaseSet(`games/${this.gameid}/load`, true);
         this.firebaseSet(`users/${this.userid}/action`, action);
     }
 
@@ -93,11 +94,11 @@ export class EfsPlayground extends BaseEfsElement {
             }, html`<div>loading...<div>`)}
         </div>
         <div class="action">
-            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/actions/${this.userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" @click="${() => this.showConfirm(action.name)}">
-                                                                                                                                                ${action.name}</div>
+            ${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/actions/${this.userid}`), actions => (actions ? actions : []).map(action => html`<div class="action" @click="${() => this.showConfirm(action.name)}">                                                                                                                             ${action.name}</div>
                                                                                                                                                 <action-confirm-popup .action="${action}" @closepopup="${() => this.hideConfirm(action.name)}" @play-action="${(e) => this.playAction(e.detail)}" id="confirm-popup-${action.name}" hidden></action-confirm-popup>
                                                                                                                                             `), html`<div>loading...<div>`)}
         </div>
+        <efs-load-popup ?hidden="${onFirebaseData(this.firebaseRef(`/games/${this.gameid}/load`), value=>!value, 'false', 'true')}"></efs-load-popup>         
         `
     }
 }

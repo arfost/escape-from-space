@@ -2,6 +2,7 @@ import {ActionConfirmPopup} from './scripts/vrac-elements/action-confirm-popup.j
 import {ConfAccountPopup} from './scripts/vrac-elements/conf-account-popup.js'
 import {EfsGame} from './scripts/vrac-elements/efs-game.js'
 import {EfsGameScreen} from './scripts/vrac-elements/efs-game-screen.js'
+import {EfsLoadPopup} from './scripts/vrac-elements/efs-load-popup.js'
 import {EfsLobby} from './scripts/vrac-elements/efs-lobby.js'
 import {EfsPlayground} from './scripts/vrac-elements/efs-playground.js'
 import {EfsShell} from './scripts/vrac-elements/efs-shell.js'
@@ -21,5 +22,6 @@ export default [
     EfsGameScreen,
     EfsPlayground,
     GameCell,
-    ActionConfirmPopup
+    ActionConfirmPopup,
+    EfsLoadPopup
 ]
