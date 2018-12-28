@@ -1,6 +1,6 @@
-import { directive } from 'https://unpkg.com/lit-html@latest/lit-html.js?module';
+import { directive } from 'https://unpkg.com/lit-html@^1.0.0-rc.1/lit-html.js?module';
 
-export const onFirebaseData = (ref, content, defaultContent, emptyContent) => directive(part => {
+export const onFirebaseData = directive((ref, content, defaultContent, emptyContent) => (part) => {
     part.setValue(defaultContent);
     ref.on("value", snap => {
         let data = snap.val();
@@ -13,7 +13,7 @@ export const onFirebaseData = (ref, content, defaultContent, emptyContent) => di
     })
     
 });
-export const onFirebaseArray = (ref, content, defaultContent, emptyContent) => directive(part => {
+export const onFirebaseArray = directive((ref, content, defaultContent, emptyContent) => (part) => {
     part.setValue(defaultContent);
     ref.on("value", snap => {
         let data = snap.val();

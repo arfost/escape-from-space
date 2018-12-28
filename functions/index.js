@@ -65,28 +65,22 @@ exports.manageUserGame = functions.database.ref('/users/{id}/game')
         }
     });
 
-exports.playAction = functions.database.ref('users/{id}/action')
-    .onWrite((snapshot, context)=>{
+exports.playAction = functions.https.onCall((datas, context)=>{
         // Grab the current value of what was written to the Realtime Database.
-        const original = snapshot.after.val();
-        const uid = context.params.id;
-
-        if (context.auth !== undefined && uid !== context.auth.uid) {
-            return admin.database().ref('/strangeActs/').push().set({
-                writerUid: context.auth.uid,
-                uid: uid,
-                value: original,
-            })
-        }
+        const uid = context.auth.uid;
+        const data = datas.action;
+        const gameId = datas.game;
         
-        console.log("player is playing action ", original)
-        return snapshot.after.ref.parent.once('value', snap=>{
-            let user = snap.val();
-            return admin.database().ref('games/'+user.game).once('value', snap=>{
+        console.log("player is playing action ", data)
+            return admin.database().ref('games/'+gameId).once('value').then(snap=>{
                 let game = snap.val()
-                game = efs.game.playAction(game, uid, original)
+                console.log("game fetched ")
+                game = efs.game.playAction(game, uid, data)
                 game.load = false;
-                return admin.database().ref('games/'+user.game).set(game);
+                console.log("game modified done ")
+                return admin.database().ref('games/'+gameId).set(game).then(res=>{
+                    console.log("datas saved ")
+                    return "ok"
+                });
             })
-        });
     });
