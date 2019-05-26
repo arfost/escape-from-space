@@ -1,86 +1,128 @@
+/* eslint-disable promise/no-nesting */
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 
-const efs = require('./glwrapper.js')
+const efsHelper = require('./efsHelper.js');
 
 admin.initializeApp();
 
-exports.manageUserGame = functions.database.ref('/users/{id}/game')
-    .onUpdate((snapshot, context) => {
-        // Grab the current value of what was written to the Realtime Database.
+// // Create and Deploy Your First Cloud Functions
+// // https://firebase.google.com/docs/functions/write-firebase-functions
+//
+// exports.helloWorld = functions.https.onRequest((request, response) => {
+//  response.send("Hello from Firebase!");
+// });
 
-        const original = snapshot.after.val();
-        const uid = context.params.id;
+exports.createGame = functions.https.onCall((datas, context)=>{
+    // Grab the current value of what was written to the Realtime Database.
+    const uid = context.auth.uid;
+    let gameRef = admin.database().ref('games').push();
 
-        if (context.auth !== undefined && uid !== context.auth.uid) {
-            return admin.database().ref('/strangeActs/').push().set({
-                writerUid: context.auth.uid,
-                uid: uid,
-                value: original,
-            })
-        }
-        if(original === false){
-            return 0
-        }
-        if(original.includes('new')){
-            return admin.database().ref('gameRef').once("value").then(snap => {
-                let value = snap.val();
-                let ref = admin.database().ref('games').push();
-                value.key = ref.key;
-                value.creatorId = uid;
-                value.name = original.split(":")[1];
-                value.status = "waiting";
-                value.playersNb = '0/2';
-                value.players = [];
-                return ref.set(value).then(()=>snapshot.after.ref.set(value.key))
-            })
-        }else{
-            return admin.database().ref('games/'+original).once('value',snap=>{
-                let game = snap.val();
-                let actual = Number(game.playersNb.split('/')[0]);
-                let max = Number(game.playersNb.split('/')[1]);
-                if(actual < max){
-                    actual++;
-                    let player = efs.player.createChar({})
-                    player.pos = efs.game.getStartingPos(game)
-                    player.uid = uid;
-                    game.playersNb = actual+'/'+max;
-                    if(Array.isArray(game.players)){
-                        game.players.push(player);
-                    }else if(actual === 1){
-                        game.players = [player]
-                    }else{
-                        console.log("oups : ", game.players)
-                    }
-                    if(actual === max){
-                        game.status = "launched"
-                        console.log(game.players)
-                        game = efs.game.initGame(game);
-                    }
-                    return admin.database().ref('games/'+original).set(game)
-                }else{
-                    return snapshot.after.ref.set("error")
-                }
-            });
-        }
-    });
+    let game = {
+        players : [{
+            uid:uid,
+            name:'roger 1'
+        }],
+        ready: false,
+        loaded:true,
+    }
 
-exports.playAction = functions.https.onCall((datas, context)=>{
-        // Grab the current value of what was written to the Realtime Database.
-        const uid = context.auth.uid;
-        const data = datas.action;
-        const gameId = datas.game;
+    gameRef.set(game);
+
+
+    return gameRef.key;
+    
+});
+
+exports.joinGame = functions.https.onCall((key, context)=>{
+    // Grab the current value of what was written to the Realtime Database.
+    const uid = context.auth.uid;
+    let gameRef = admin.database().ref('games/'+key);
+    
+    return gameRef.once('value').then(snap=>{
+        let game = snap.val();
+
+        if(game.players.length >=5){
+            throw new Error('This game is at maximum capacity'); //TODO trad
+        }
+        game.players.push({
+            uid:uid,
+            name:'roger '+(game.players.length+1)
+        })
         
-        console.log("player is playing action ", data)
-            return admin.database().ref('games/'+gameId).once('value').then(snap=>{
-                let game = snap.val()
-                console.log("game fetched ")
-                game = efs.game.playAction(game, uid, data)
-                game.load = false;
-                console.log("game modified done ")
-                return admin.database().ref('games/'+gameId).set(game).then(res=>{
-                    console.log("datas saved ")
-                    return "ok"
-                });
-            })
+        return admin.database().ref('games/'+key).set(game).then(res=>{
+            return key;
+        });
     });
+});
+
+exports.quitGame = functions.https.onCall((key, context)=>{
+    // Grab the current value of what was written to the Realtime Database.
+    const uid = context.auth.uid;
+    let gameRef = admin.database().ref('games/'+key);
+    
+    return gameRef.once('value').then(snap=>{
+        let game = snap.val();
+
+        game.players = game.players.filter(pl=>pl.uid !== uid);
+        if(game.gameInfo.toPlay>=game.players.length){
+            game.gameInfo.toPlay = 0;
+        }
+        
+        return admin.database().ref('games/'+key).set(game).then(res=>{
+            return key;
+        });
+    });
+});
+
+exports.launchGame = functions.https.onCall((key, context)=>{
+    // Grab the current value of what was written to the Realtime Database.
+    const uid = context.auth.uid;
+    let gameRef = admin.database().ref('games/'+key);
+    let cellsRef = admin.database().ref('cells/'+key);
+    
+    cellsRef.set(efsHelper.newMap());
+    
+    return gameRef.once('value').then(snap=>{
+        let game = snap.val();
+
+        game.liveChars = efsHelper.getChars();
+        game.deadChars = [];
+        
+        let charsKey = [];
+        let roomKey = [];
+        for(let i = 0; i<game.liveChars.length; i++){
+            charsKey.push(i);
+            roomKey.push(i+1);
+        }
+
+        charsKey = efsHelper.shuffleArray(charsKey);
+        roomKey = efsHelper.shuffleArray(roomKey);
+        game.players = efsHelper.shuffleArray(game.players);
+
+        game.players = game.players.map((player)=>{
+            player.chars = [charsKey.shift(), charsKey.shift()];
+            return  player;
+        })
+
+        game.liveChars = game.liveChars.map((char)=>{
+            char.pos = roomKey.shift();
+            return char;
+        })
+
+        console.log(game.liveChars)
+
+        game.gameInfo = {
+            turn: 1,
+            toPlay:0,
+            votes:0
+        }
+
+        game.ready = true;
+        game.finished = false;
+        
+        return admin.database().ref('games/'+key).set(game).then(res=>{
+            return key;
+        });
+    });
+});

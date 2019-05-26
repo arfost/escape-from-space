@@ -1,7 +1,7 @@
 {
   "parserOptions": {
     // Required for certain syntax usages
-    "ecmaVersion": 6
+    "ecmaVersion": 2017
   },
   "plugins": [
     "promise"
@@ -115,6 +115,9 @@
     "promise/always-return": 2,
 
     //Enforces the use of catch() on un-returned promises
-    "promise/catch-or-return": 2
+    "promise/catch-or-return": 2,
+
+    // Warn against nested then() or catch() statements
+    "promise/no-nesting": 1
   }
 }
