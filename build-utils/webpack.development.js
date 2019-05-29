@@ -1,4 +1,5 @@
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = () => ({
   module: {
@@ -10,6 +11,9 @@ module.exports = () => ({
     ]
   },
   plugins: [
+    new webpack.NormalModuleReplacementPlugin(/(.*)ENV(\.*)/, function(resource) {
+        resource.request = resource.request.replace(/ENV/, 'development');
+      }),
     // Copy empty ServiceWorker so install doesn't blow up
     new CopyWebpackPlugin(['src/sw.js'])
   ],

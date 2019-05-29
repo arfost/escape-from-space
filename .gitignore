@@ -3,3 +3,4 @@ dist
 .cache
 .vs
 .firebase
+*-debug.log

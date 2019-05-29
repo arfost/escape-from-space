@@ -1,4 +1,4 @@
-import './fireInit.js'
+import '../config/fireInit.ENV.js';
 import './styles.css';
 
 
