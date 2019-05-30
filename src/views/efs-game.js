@@ -212,6 +212,10 @@ class EfsGame extends EfsBase {
         this.emit('toast-msg', `Game token copied to clipboard`);
      }
 
+     displayToken(){
+         return html`<p>Token : ${this.user.game}<img class="ml-1" src='img/game/clipboard-text.png' @click="${this.copyStringToClipboard}"></p>`
+     }
+
     cancel(){
         this.mode = DEFAULTEVENT;
     }
@@ -273,11 +277,12 @@ class EfsGame extends EfsBase {
                         <div class="flex-box f-vertical">
                             <h4>The game is finished.</h4>
                             <div class="flex-box f-horizontal f-j-center">
-                            <div class="flex-box f-vertical f-j-center ">
+                                <div class="flex-box f-vertical f-j-center ">
                                     <h5>Death order</h5>
                                     <div class="flex-box f-horizontal f-wrap">
                                         ${this.game.deadChars.map(char=>html`${this.makeChar(char)}`)}
                                     </div>
+                                    ${this.displayToken()}
                                 </div>
                                 <div class="flex-box f-vertical f-j-center ">
                                     <h5>Score : </h5>
@@ -311,7 +316,7 @@ class EfsGame extends EfsBase {
                                 <p>You can invite people to this game by giving this token above. There is no chat for now, so use any other messaging system you'd like for that.</p>
                                 <p>When ready, click the button on the right.</p>
                                 <p>By the way, everybody is roger for now but you are the red one, futur version should change that.</p>
-                                <p>Token : ${this.user.game}<img class="ml-1" src='img/game/clipboard-text.png' @click="${this.copyStringToClipboard}"></p>
+                                ${this.displayToken()}
                             </div>
                             <div>
                                 <button class="btn btn-outline-secondary" @click="${this.launchGame}">
