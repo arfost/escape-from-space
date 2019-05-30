@@ -37,10 +37,11 @@ export class Game extends FireReference {
                 });
 
                 //if chest is in the room, move it with char
-                let oldRoom = this.data.cells.filter(cell => cell.id == oldRoomId);
+                let oldRoom = this.data.cells.find(cell => cell.id == oldRoomId);
+                console.log(oldRoom)
                 if (oldRoom.chest) {
                     oldRoom.chest = false;
-                    let newRoom = this.data.cells.filter(cell => cell.id == roomId);
+                    let newRoom = this.data.cells.find(cell => cell.id == roomId);
                     newRoom.chest = true;
                 }
 
@@ -74,6 +75,8 @@ export class Game extends FireReference {
         if (game.gameInfo.toPlay >= game.players.length) {
             game.gameInfo.toPlay = 0;
         }
+
+        return game;
     }
 
     finishGame(game) {

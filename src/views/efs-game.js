@@ -54,6 +54,7 @@ class EfsGame extends EfsBase {
             background-position: center;
             background-repeat: no-repeat;
             background-size: 100% 100%; 
+            overflow:hidden;
         }
         .selectable {
             box-shadow: 0 6px 14px 0 #666;
@@ -68,6 +69,24 @@ class EfsGame extends EfsBase {
             background-color: red;
             border-radius: 50%;
             transition: all 0.1s ease-in-out;
+            border:1px solid black;
+            margin:0.2em;
+            overflow:hidden;
+        }
+        .chest {
+            width: 3vh;
+            height: 3vh;
+            background-color: green;
+            border-radius: 50%;
+            border:1px solid black;
+            margin:0.2em;
+            overflow:hidden;
+        }
+        .exit {
+            width: 3vh;
+            height: 3vh;
+            background-color: blue;
+            border-radius: 50%;
             border:1px solid black;
             margin:0.2em;
             overflow:hidden;
@@ -114,11 +133,12 @@ class EfsGame extends EfsBase {
             return;
         }
         if(this.mode.name === 'MOVETO'){
-            if(this.selectable === room.connections.rooms){
+            if (this.selectable === room.connections.rooms) {
+                
                 this.selectable = [];
                 this.mode = DEFAULTEVENT;
             }else if(this.selectable.includes(room.id)){
-                this.gameRef.actions.moveChar(this.mode.params, room.id, this.user.uid);
+                this.gameRef.actions.moveChar(this.mode.params, room.id, charId, this.user.uid);
                 this.selectable = [];
                 this.mode = DEFAULTEVENT;
                 this.emit('toast-msg', `Character moved`);
@@ -142,7 +162,7 @@ class EfsGame extends EfsBase {
             this.mode = {
                 name:'SELECTHERO',
                 params:charsInRoom,
-                canMove:false
+                canMove:room.chest
             }
         }
     }
@@ -165,7 +185,9 @@ class EfsGame extends EfsBase {
                         @click="${e=>this.roomClicked(room)}"
                         class="room ${room.orientation} flex-box f-j-center f-a-center scroll ${room.orientation === 'NS' ? 'f-vertical' : 'f-horizontal'} ${(this.selectable && this.selectable.includes(room.id)) ? 'selectable' : ''}" 
                         style="grid-column:${room.pos.x}/span ${room.orientation === 'NS' ? 2 : 4};grid-row:${room.pos.y}/span ${room.orientation === 'NS' ? 4 : 2}">
-                            ${charsInRoom.map(char=>this.makeChar(char))}
+                            ${charsInRoom.map(char => this.makeChar(char))}
+                            ${room.chest ? html`<div class="chest"></div>` : ``}
+                            ${room.exit ? html`<div class="exit"></div>` : ``}
                         </div>` 
     }
 
@@ -185,9 +207,12 @@ class EfsGame extends EfsBase {
         });
     }
 
-    selectHero(hero){
-        this.mode = DEFAULTEVENT;
-        this.gameRef.actions.killChar(hero, this.user.uid);
+    selectHero(hero) {
+        if (this.mode.isMove) {
+            
+        } else {
+            this.gameRef.actions.killChar(hero, this.user.uid);
+        }
         this.selectable = [];
         this.mode = DEFAULTEVENT;
         this.emit('toast-msg', `Character killed`);
@@ -201,7 +226,7 @@ class EfsGame extends EfsBase {
         return html`
             ${this.styles}
             ${
-                this.game.loaded ? 
+            this.game.loaded ?
                 html`<div class="flex-box f-horizontal p-0 h-100">
                         <div class="flex-box f-vertical f-j-center w-80 scroll f-a-center">
                             <div class="map">
@@ -210,40 +235,44 @@ class EfsGame extends EfsBase {
                         </div>
                         <div class="flex-box f-vertical w-20 list-deads scroll">
                         ${ this.game.gameInfo ?
-                            html`<div class="flex-box f-vertical f-j-center f-a-center">
+                        html`<div class="flex-box f-vertical f-j-center f-a-center">
                                     <h4>Game infos : </h4>
-                                    <p>You are ${this.game.players.find(player=>player.uid===this.user.uid).name}</p>
+                                    <p>You are ${this.game.players.find(player => player.uid === this.user.uid).name}</p>
                                     <p>Turn ${this.game.gameInfo.turn}</p>
                                     <p>Turn of ${this.game.players[this.game.gameInfo.toPlay].name}</p>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center">
                                     <h4>Dead chars (older to newer -->)</h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center f-wrap">
-                                        ${this.game.deadChars.map(char=>this.makeChar(char))}
+                                        ${this.game.deadChars.map(char => this.makeChar(char))}
                                     </div>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center">
                                     <h4>Your chars</h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center">
-                                        ${this.selfChars().map(char=>this.makeChar(char))}
+                                        ${this.selfChars().map(char => this.makeChar(char))}
                                     </div>
                                     <p>The more late they die, the more points you win.</p>
                                 </div>`:
-                            `loading`
-                        }
+                        `loading`
+                    }
                         </div>
                     </div>
                     <game-popin ?hidden=${this.mode.name !== 'SELECTHERO'}>
                         <div class="flex-box f-vertical">
                             <div class="flex-box f-horizontal f-j-center">
                                 <p>
-                                    Choose wich hero you want to kill.
+                                    Choose wich hero you want to kill${this.mode.canMove ? html`, or move with the escape pod battery` : `.`}
                                 </p>
                             </div>
                             <div class="flex-box f-horizontal">
-                                ${(this.mode.name === 'SELECTHERO' ? this.mode.params : []).map(char=>html`<div @click="${e=>this.selectHero(char)}">${this.makeChar(char, 'select-char')}</div>`)}
+                                ${(this.mode.name === 'SELECTHERO' ? this.mode.params : []).map(char => html`<div @click="${e => this.selectHero(char)}">${this.makeChar(char, 'select-char')}</div>`)}
                             </div>
                             <div class="flex-box f-vertical f-j-end">
+                                ${this.mode.canMove ?
+                                    html`<button class="btn btn-outline-secondary mb-1" @click="${e => { this.mode = Object.assign({}, this.mode, {isMove:!this.mode.isMove}); console.log('poeut') }}">
+                                        mode : ${this.mode.isMove ? `move` : `kill`}
+                                    </button>`:`.`}
                                 <button class="btn btn-outline-secondary" @click="${this.cancel}">
                                     cancel
                                 </button>
