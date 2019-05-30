@@ -193,6 +193,25 @@ class EfsGame extends EfsBase {
         this.emit('toast-msg', `Character killed`);
     }
 
+    copyStringToClipboard () {
+        // Create new element
+        var el = document.createElement('textarea');
+        // Set value (string to be copied)
+        el.value = this.user.game;
+        // Set non-editable to avoid focus and move outside of view
+        el.setAttribute('readonly', '');
+        el.style = {position: 'absolute', left: '-9999px'};
+        document.body.appendChild(el);
+        // Select text inside element
+        el.select();
+        // Copy text to clipboard
+        document.execCommand('copy');
+        // Remove temporary element
+        document.body.removeChild(el);
+
+        this.emit('toast-msg', `Game token copied to clipboard`);
+     }
+
     cancel(){
         this.mode = DEFAULTEVENT;
     }
@@ -292,7 +311,7 @@ class EfsGame extends EfsBase {
                                 <p>You can invite people to this game by giving this token above. There is no chat for now, so use any other messaging system you'd like for that.</p>
                                 <p>When ready, click the button on the right.</p>
                                 <p>By the way, everybody is roger for now but you are the red one, futur version should change that.</p>
-                                <p>Token : ${this.user.game}</p>
+                                <p>Token : ${this.user.game}<img class="ml-1" src='img/game/clipboard-text.png' @click="${this.copyStringToClipboard}"></p>
                             </div>
                             <div>
                                 <button class="btn btn-outline-secondary" @click="${this.launchGame}">
