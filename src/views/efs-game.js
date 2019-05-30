@@ -123,7 +123,6 @@ class EfsGame extends EfsBase {
                 this.mode = DEFAULTEVENT;
                 this.emit('toast-msg', `Character moved`);
             }else{
-                console.log('pouet');
                 this.emit('toast-msg', `Characters can only move in adjacent rooms`);
             }
         }else{
@@ -145,12 +144,10 @@ class EfsGame extends EfsBase {
                 params:charsInRoom,
                 canMove:false
             }
-            console.log('hey hey', this.mode);
         }
     }
 
     formatScore(){
-        console.log(this.game)
         let fscore = [];
         for(let player in this.game.score){
             fscore.push({
@@ -189,7 +186,6 @@ class EfsGame extends EfsBase {
     }
 
     selectHero(hero){
-        console.log(hero);
         this.mode = DEFAULTEVENT;
         this.gameRef.actions.killChar(hero, this.user.uid);
         this.selectable = [];

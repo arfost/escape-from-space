@@ -1,9 +1,19 @@
 import { html, css } from 'lit-element';
-import { EfsBase } from '../efs-base.js'
+import Datavault from '../datavault.js';
+import { EfsBase } from '../efs-base.js';
 
 import '../components/fab-img.js'
 
 class EfsNogame extends EfsBase {
+
+    constructor() {
+        super();
+        this.newsRef = Datavault.refGetter.getNews();
+        this.news = this.newsRef.getDefaultValue();
+        this.newsRef.on("value", news => {
+            this.news = news;
+        })
+    }
 
     get selfStyles() {
         return css`
@@ -27,12 +37,22 @@ class EfsNogame extends EfsBase {
     static get properties() {
         return {
             user: Object,
-            token: String
+            token: String,
+            news: Array
         }
     }
 
     joinGame(e){
         this.emit('join-game', this.shadowRoot.getElementById('token').value);
+    }
+
+    displayNews(news){
+        return html`<div class="card">
+        <h4>${news.title}</h4>
+        <p>
+            ${news.body}
+        </p>
+    </div>`
     }
 
     render() {
@@ -70,13 +90,8 @@ class EfsNogame extends EfsBase {
                         </p>
                     </div>
                 </div>
-                <div class="flex-box f-vertical">
-                    <div class="card">
-                        <h4>First version</h4>
-                        <p>
-                            This is a first version of this game.
-                        </p>
-                    </div>
+                <div class="flex-box f-vertical f-j-start">
+                    ${this.news.map(this.displayNews)}
                 </div>
             </div>
         `;
