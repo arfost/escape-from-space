@@ -122,7 +122,7 @@ class EfsGame extends EfsBase {
         }
     }
 
-    makeChar(char, customClass=''){
+    makeChar(char={}, customClass=''){
         return html`<img src="${char.picture}" class="char ${customClass}" />` 
     }
 
@@ -134,11 +134,13 @@ class EfsGame extends EfsBase {
         }
         if(this.mode.name === 'MOVETO'){
             if (this.selectable === room.connections.rooms) {
-                
+                if (room.chest && room.exit) {
+                    this.gameRef.actions.moveChar(this.mode.params, room.id, this.mode.char, this.user.uid);
+                }
                 this.selectable = [];
                 this.mode = DEFAULTEVENT;
             }else if(this.selectable.includes(room.id)){
-                this.gameRef.actions.moveChar(this.mode.params, room.id, charId, this.user.uid);
+                this.gameRef.actions.moveChar(this.mode.params, room.id, this.mode.char, this.user.uid);
                 this.selectable = [];
                 this.mode = DEFAULTEVENT;
                 this.emit('toast-msg', `Character moved`);
@@ -155,14 +157,16 @@ class EfsGame extends EfsBase {
                 this.selectable = room.connections.rooms;
                 this.mode = {
                     name:'MOVETO',
-                    params:room.id
+                    params: room.id,
+                    char:charsInRoom[0].id
                 };
                 return;
             }
             this.mode = {
                 name:'SELECTHERO',
                 params:charsInRoom,
-                canMove:room.chest
+                canMove: room.chest,
+                room:room.id
             }
         }
     }
@@ -187,7 +191,7 @@ class EfsGame extends EfsBase {
                         style="grid-column:${room.pos.x}/span ${room.orientation === 'NS' ? 2 : 4};grid-row:${room.pos.y}/span ${room.orientation === 'NS' ? 4 : 2}">
                             ${charsInRoom.map(char => this.makeChar(char))}
                             ${room.chest ? html`<div class="chest"></div>` : ``}
-                            ${room.exit ? html`<div class="exit"></div>` : ``}
+                            ${room.exit ? html`<div class="exit ${room.chest && room.exit ? 'selectable' : ''}"></div>` : ``}
                         </div>` 
     }
 
@@ -196,7 +200,11 @@ class EfsGame extends EfsBase {
         if(!selfPlayer.chars){
             return [];
         }
-        return [...this.game.liveChars.filter(char=>selfPlayer.chars.includes(char.id)), ...this.game.deadChars.filter(char=>selfPlayer.chars.includes(char.id))]
+        let selfChars = [...this.game.liveChars.filter(char => selfPlayer.chars.includes(char.id)), ...this.game.deadChars.filter(char => selfPlayer.chars.includes(char.id))];
+        if (this.game.exitedChar && selfPlayer.chars.includes(this.game.exitedChar.id)) {
+            selfChars.push(this.game.exitedChar);
+        }
+        return selfChars;
     }
 
     launchGame(){
@@ -209,13 +217,19 @@ class EfsGame extends EfsBase {
 
     selectHero(hero) {
         if (this.mode.isMove) {
-            
+            this.selectable = this.game.cells.find(room=>room.id===this.mode.room).connections.rooms;
+            this.mode = {
+                name:'MOVETO',
+                params: this.mode.room,
+                char:hero.id
+            };
         } else {
             this.gameRef.actions.killChar(hero, this.user.uid);
+            this.selectable = [];
+            this.mode = DEFAULTEVENT;
+            this.emit('toast-msg', `Character killed`);
         }
-        this.selectable = [];
-        this.mode = DEFAULTEVENT;
-        this.emit('toast-msg', `Character killed`);
+        
     }
 
     cancel(){
@@ -245,6 +259,12 @@ class EfsGame extends EfsBase {
                                     <h4>Dead chars (older to newer -->)</h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center f-wrap">
                                         ${this.game.deadChars.map(char => this.makeChar(char))}
+                                    </div>
+                                </div>
+                                <div class="flex-box f-vertical f-j-center f-a-center" ?hidden=${!this.game.exitedChar}>
+                                    <h4>He has escape</h4>
+                                    <div class="flex-box f-horizontal f-js-end f-j-center f-a-center f-wrap">
+                                        ${this.makeChar(this.game.exitedChar)}
                                     </div>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center">

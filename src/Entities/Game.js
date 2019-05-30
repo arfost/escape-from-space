@@ -23,14 +23,23 @@ export class Game extends FireReference {
             launchGame: async (key) => {
                 const res = await firebase.functions().httpsCallable('launchGame')(key);
             },
-            moveChar: (oldRoomId, roomId, uid) => {
+            moveChar: (oldRoomId, roomId, charId, uid) => {
                 if (this.data.game.players[this.data.game.gameInfo.toPlay].uid !== uid) {
                     throw new Error('It\'s not your turn');
                 }
 
+                if (oldRoomId === roomId) {
+                    let room = this.data.cells.find(cell => cell.id == oldRoomId);
+                    if (!room.chest || !room.exit) {
+                        throw new Error('You can\'t exit by this room');
+                    }
+                    this.data.game.exitedChar = this.data.game.liveChars.find(c => c.id == charId);
+                    this.data.game.liveChars = this.data.game.liveChars.filter(c => c.id !== charId);
+                    room.chest = false;
+                }
                 //for each char living, change position if the one we move
                 this.data.game.liveChars = this.data.game.liveChars.map(char => {
-                    if(char.pos == oldRoomId){
+                    if(char.id == charId){
                         char.pos = roomId;
                     }
                     return char;
@@ -46,6 +55,7 @@ export class Game extends FireReference {
                 }
 
 
+
                 this.data.game = this.passTurn(this.data.game);
                 this.save();
             },
@@ -55,7 +65,6 @@ export class Game extends FireReference {
                 }
 
                 this.data.game.liveChars = this.data.game.liveChars.filter(c => c.id !== char.id);
-
 
                 this.data.game.deadChars = this.data.game.deadChars ? [...this.data.game.deadChars, char] : [char];
 
@@ -81,10 +90,12 @@ export class Game extends FireReference {
 
     finishGame(game) {
         game.deadChars.push(game.liveChars.shift());
+        if (game.exitedChar) {
+            game.deadChars.push(game.exitedChar);
+        }
 
         if (game.score) {
             for (let player in game.score) {
-                game.score[player].total += game.score[player].manche;
                 game.score[player].manche = 0;
             }
         } else {
@@ -103,6 +114,7 @@ export class Game extends FireReference {
             for (let player of game.players) {
                 if (player.chars.includes(char.id) && game.score[player.name].manche === 0) {
                     game.score[player.name].manche = deadCharsCopy.length;
+                    game.score[player.name].total += game.score[player.name].manche;
                     done++;
                 }
             }
@@ -115,6 +127,7 @@ export class Game extends FireReference {
         let data = {
             deadChars: game.deadChars || [],
             liveChars: game.liveChars || [],
+            exitedChar: game.exitedChar,
             cells: cells || [],
             players: game.players || [],
             gameInfo: game.gameInfo || {
