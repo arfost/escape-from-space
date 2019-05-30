@@ -137,7 +137,6 @@ class EfsMain extends EfsBase {
     }
 
     render() {
-        console.log(this.user)
         return html`
             ${this.styles}
             ${this.user.game ? 

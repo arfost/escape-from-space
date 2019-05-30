@@ -110,8 +110,6 @@ exports.launchGame = functions.https.onCall((key, context)=>{
             return char;
         })
 
-        console.log(game.liveChars)
-
         game.gameInfo = {
             turn: 1,
             toPlay:0,

@@ -28,9 +28,7 @@ export class Game extends FireReference {
                 }
 
                 this.data.game.liveChars = this.data.game.liveChars.map(char => {
-                    console.log(char.pos, oldRoomId, roomId)
                     if(char.pos == oldRoomId){
-                        console.log("i'm moving")
                         char.pos = roomId;
                     }
                     return char;
@@ -98,7 +96,7 @@ export class Game extends FireReference {
         return game;
     }
 
-    treateDatas({game, cells}) {
+    formatDatas({game, cells}) {
         let data = {
             deadChars : game.deadChars || [],
             liveChars : game.liveChars || [],

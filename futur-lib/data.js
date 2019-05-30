@@ -17,7 +17,7 @@ export class Dao {
         //create_getters
         for (let ref of this._refs) {
             this.refGetter['get' + ref.name] = (...args) => {
-                let argsKey = JSON.stringify(args);
+                let argsKey = JSON.stringify(args)+ref.name;
 
                 if (!this.refCach[argsKey]) {
                     let instanciedRef = new ref.classDef(...args);
@@ -32,6 +32,10 @@ export class Dao {
     }
 }
 export class FireReference {
+
+    constructor() {
+        this.initConnection();
+    }
 
     get params() {
         return {}
@@ -112,7 +116,7 @@ export class FireReference {
             return;
         }
         let deepCopiedData = JSON.parse(JSON.stringify(this.data))
-        this.formattedData = this.treateDatas(deepCopiedData);
+        this.formattedData = this.formatDatas(deepCopiedData);
         if (this.listener) {
             this.listener(this.formattedData);
         }
@@ -120,7 +124,7 @@ export class FireReference {
 
     getDefaultValue() {
         let deepCopiedData = JSON.parse(JSON.stringify(this.defaultValues))
-        return this.treateDatas(deepCopiedData);
+        return this.formatDatas(deepCopiedData);
     }
 
     pushToData(source, datas) {
@@ -199,7 +203,7 @@ export class LoginReference extends FireReference {
         }
     }
 
-    treateDatas({user, permissions}) {
+    formatDatas({user, permissions}) {
         user = user ? user : this.defaultValues.user;
         user.uid = this.uid;
         user.permissions = permissions ? permissions : [];
