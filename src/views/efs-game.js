@@ -22,10 +22,16 @@ class EfsGame extends EfsBase {
         return css`
         .map {
             display:grid;
-            grid-template-columns: repeat(17, 1fr);
-            grid-template-rows: repeat(15, 1fr);
-            width:1200px;
-            height:900px;
+            grid-template-columns: repeat(16, 1fr);
+            grid-template-rows: repeat(16, 1fr);
+            width:95vh;
+            height:95vh;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            background-color:black;
+            background-image:url("/img/game/2k_stars.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 100% 100%; 
         }
         .list-deads {
             background-color: var(--shade-color);
@@ -43,7 +49,7 @@ class EfsGame extends EfsBase {
             color:red
         }
         .room {
-            background-color:blue;
+            background-color:grey;
             transition: all 0.1s ease-in-out;
             background-position: center;
             background-repeat: no-repeat;
@@ -57,13 +63,14 @@ class EfsGame extends EfsBase {
             border:1px solid black;
         }
         .char {
-            width: 70px;
-            height: 70px;
+            width: 6vh;
+            height: 6vh;
             background-color: red;
             border-radius: 50%;
             transition: all 0.1s ease-in-out;
             border:1px solid black;
             margin:0.2em;
+            overflow:hidden;
         }
         .select-char:hover {
             box-shadow: 0 6px 14px 0 #666;
@@ -200,7 +207,7 @@ class EfsGame extends EfsBase {
             ${
                 this.game.loaded ? 
                 html`<div class="flex-box f-horizontal p-0 h-100">
-                        <div class="flex-box f-vertical f-j-center w-80 scroll">
+                        <div class="flex-box f-vertical f-j-center w-80 scroll f-a-center">
                             <div class="map">
                                 ${this.game.cells.map(this.makeRoom.bind(this))}
                             </div>
@@ -214,7 +221,7 @@ class EfsGame extends EfsBase {
                                     <p>Turn of ${this.game.players[this.game.gameInfo.toPlay].name}</p>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center">
-                                    <h4>Dead chars</h4>
+                                    <h4>Dead chars (older to newer -->)</h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center f-wrap">
                                         ${this.game.deadChars.map(char=>this.makeChar(char))}
                                     </div>
