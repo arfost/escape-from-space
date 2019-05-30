@@ -8,8 +8,9 @@
     "webpack-dev-server": "webpack-dev-server --history-api-fallback",
     "prod": "npm run webpack -- --env.mode production --env.presets serviceworker",
     "dev": "npm run clfunctions & npm run webpack-dev-server -- --env.mode development",
+    "dev:win": "win-launch.cmd",
     "dev:sw": "npm run webpack-dev-server -- --env.mode development  --env.presets serviceworker",
-    "clfunctions":"firebase serve --only functions"
+    "clfunctions": "firebase serve --only functions"
   },
   "repository": {
     "type": "git",
