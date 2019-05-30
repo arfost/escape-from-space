@@ -4,3 +4,4 @@ dist
 .vs
 .firebase
 *-debug.log
+.scannerwork/
