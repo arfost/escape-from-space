@@ -2,6 +2,7 @@ import { html, css } from 'lit-element';
 import Datavault from '../datavault.js';
 import { EfsBase } from '../efs-base.js';
 
+import  '../components/btn-loader.js';
 import '../components/fab-img.js'
 
 class EfsNogame extends EfsBase {
@@ -43,7 +44,13 @@ class EfsNogame extends EfsBase {
     }
 
     joinGame(e){
-        this.emit('join-game', this.shadowRoot.getElementById('token').value);
+        if(this.shadowRoot.getElementById('token').value){
+            this.shadowRoot.getElementById('join-game').textMode = false;
+            this.emit('join-game', this.shadowRoot.getElementById('token').value);
+        }else{
+            this.emit('toast-msg', "Please enter a game token before joining");
+        }
+        
     }
 
     displayNews(news){
@@ -65,9 +72,12 @@ class EfsNogame extends EfsBase {
                         <p>
                             Create a new game, you'll have a token for your friends to join.
                         </p>   
-                        <button class="btn btn-outline-secondary" @click="${e=>this.emit('create-game', e.details)}">
+                        <btn-loader id="create-game" @click="${e=>{
+                            this.shadowRoot.getElementById('create-game').textMode = false;
+                            this.emit('create-game', e.details);
+                        }}">
                             create
-                        </button>
+                        </btn-loader>
                     </div>
                     <div class="card" ?hidden="${this.user.isAnonymous}">
                         <h4>Join game</h4>
@@ -78,9 +88,9 @@ class EfsNogame extends EfsBase {
                             <div class="efs-textfield mr-1">
                                 <input type="text" id="token">
                             </div>
-                            <button class="btn btn-outline-secondary" @click="${this.joinGame}">
+                            <btn-loader id="join-game" @click="${this.joinGame}">
                                 join
-                            </button>
+                            </btn-loader>
                         </div>
                     </div>
                     <div class="card" ?hidden="${!this.user.isAnonymous}">

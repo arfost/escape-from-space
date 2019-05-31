@@ -17,10 +17,6 @@ class EfsMain extends EfsBase {
         })
     }
 
-    firstUpdated(changedProperties) {
-        this.addEventListener('toat-msg', this.showToast);
-    }
-
     showToast(e){
         this.toastMsg = e.detail;
         // Get the snackbar DIV
@@ -112,7 +108,7 @@ class EfsMain extends EfsBase {
             });
         }).catch(err=>{
             this.showToast({
-                detail:err.message
+                detail:"An issue occured when joining, check the token, reload the page and try again."
             });
         });
     }
@@ -124,12 +120,15 @@ class EfsMain extends EfsBase {
         }
     }
 
-    quitGame(){
+    quitGame(e, btn){
+        btn.textMode = false;
         this.loginRef.actions.quitGame(this.user.game).then(ret=>{
+            btn.textMode = true;
             this.showToast({
                 detail:'Game quitted'
             });
         }).catch(err=>{
+            btn.textMode = true;
             this.showToast({
                 detail:err.message
             });
@@ -141,7 +140,7 @@ class EfsMain extends EfsBase {
             ${this.styles}
             ${this.user.game ? 
                 html`<efs-game .user="${this.user}" @toast-msg="${this.showToast}" @quit-game="${this.quitGame}"></efs-game>`:
-                html`<efs-nogame .user="${this.user}" @create-game="${this.createGame}" @join-game="${this.joinGame}"></efs-nogame>`}
+                html`<efs-nogame .user="${this.user}" @toast-msg="${this.showToast}" @create-game="${this.createGame}" @join-game="${this.joinGame}"></efs-nogame>`}
             <fab-img @click="${this.toggleLogin}" .src="${this.user.photoURL}"></fab-img>
             <div id="snackbar">${this.toastMsg}</div>`;
     }
