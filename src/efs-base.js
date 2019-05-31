@@ -161,6 +161,9 @@ export class EfsBase extends LitElement {
             .mr-1 {
                 margin-right:1em;
             }
+            .mb-1 {
+                margin-bottom:1em;
+            }
             :focus{
                 outline:none;
             }`
