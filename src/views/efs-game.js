@@ -7,6 +7,19 @@ import '../components/game-popin.js';
 const DEFAULTEVENT = {
     name:'default',
 }
+
+const CHESTDESC = {
+    name:"Energy cell",
+    desc:"This cell is used to power the escape pod. Bring them togethers to escape and survive.",
+    picture:"https://dummyimage.com/150x150/d10fd1/0011ff.png&text=Cell"
+}
+
+const EXITGATE = {
+    name:"Escape pod",
+    desc:"This is the escape pod, bring the energy cell to it to escape.",
+    picture:"https://dummyimage.com/150x150/d10fd1/0011ff.png&text=Escape pod"
+}
+
 class EfsGame extends EfsBase {
 
     constructor(){
@@ -100,6 +113,18 @@ class EfsGame extends EfsBase {
         }
         .EO {
             background-image: url("/img/game/fond_salle_eo.png"); 
+        }
+        .tooltip {
+            position:fixed;
+            bottom:1vh;
+            left:1vh;
+            background-position:5% 5%;
+            background-repeat:no-repeat;
+            min-height:30vh;
+            min-width:10vh;
+        }
+        .tooltip * {
+            pointer-events: none;
         }`
     }
 
@@ -108,7 +133,8 @@ class EfsGame extends EfsBase {
             user: Object,
             game: Object,
             selectable: Array,
-            mode: Object
+            mode: Object,
+            tooltip:Object
         }
     }
 
@@ -123,7 +149,7 @@ class EfsGame extends EfsBase {
     }
 
     makeChar(char={}, customClass=''){
-        return html`<img src="${char.picture}" class="char ${customClass}" />` 
+        return html`<img src="${char.picture}" class="char ${customClass}" @mouseover="${e=>this.configureTooltip(char)}" />` 
     }
 
     roomClicked(room){
@@ -259,12 +285,30 @@ class EfsGame extends EfsBase {
         this.mode = DEFAULTEVENT;
     }
 
+    displayTooltip(){
+        if(this.tooltip){
+            return html`<div class="flex-box f-vertical f-j-start f-a-end tooltip card" style="background-image:url('${this.tooltip.picture}')" @mouseout="${e=>this.configureTooltip(false)}">
+                            <h4 @mouseout="${e=>e.stopPropagation()}">${this.tooltip.name}</h4>
+                            <p @mouseout="${e=>e.stopPropagation()}">${this.tooltip.desc}</p>
+                        </div>`
+        }
+        return '';
+    }
+
+    //useless as is, but in a futur we should check infos format;
+    configureTooltip(infos){
+        console.log('pouet')
+        this.tooltip = infos;
+    }
+
     render() {
         return html`
             ${this.styles}
             ${
-            this.game.loaded ?
-                html`<div class="flex-box f-horizontal p-0 h-100">
+                this.game.loaded ? 
+                html`
+                    ${this.displayTooltip()}
+                    <div class="flex-box f-horizontal p-0 h-100">
                         <div class="flex-box f-vertical f-j-center w-80 scroll f-a-center">
                             <div class="map">
                                 ${this.game.cells.map(this.makeRoom.bind(this))}
