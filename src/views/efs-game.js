@@ -216,8 +216,8 @@ class EfsGame extends EfsBase {
                         class="room ${room.orientation} flex-box f-j-center f-a-center scroll ${room.orientation === 'NS' ? 'f-vertical' : 'f-horizontal'} ${(this.selectable && this.selectable.includes(room.id)) ? 'selectable' : ''}" 
                         style="grid-column:${room.pos.x}/span ${room.orientation === 'NS' ? 2 : 4};grid-row:${room.pos.y}/span ${room.orientation === 'NS' ? 4 : 2}">
                             ${charsInRoom.map(char => this.makeChar(char))}
-                            ${room.chest ? html`<div class="chest"></div>` : ``}
-                            ${room.exit ? html`<div class="exit ${room.chest && room.exit ? 'selectable' : ''}"></div>` : ``}
+                            ${room.chest ? html`<div class="chest" @mouseover="${e=>this.configureTooltip(CHESTDESC)}"></div>` : ``}
+                            ${room.exit ? html`<div class="exit ${room.chest && room.exit ? 'selectable' : ''}" @mouseover="${e=>this.configureTooltip(EXITGATE)}"></div>` : ``}
                         </div>` 
     }
 
@@ -287,7 +287,7 @@ class EfsGame extends EfsBase {
 
     displayTooltip(){
         if(this.tooltip){
-            return html`<div class="flex-box f-vertical f-j-start f-a-end tooltip card" style="background-image:url('${this.tooltip.picture}')" @mouseout="${e=>this.configureTooltip(false)}">
+            return html`<div class="flex-box f-vertical f-j-space f-a-end tooltip card" style="background-image:url('${this.tooltip.picture}')" @mouseout="${e=>this.configureTooltip(false)}">
                             <h4 @mouseout="${e=>e.stopPropagation()}">${this.tooltip.name}</h4>
                             <p @mouseout="${e=>e.stopPropagation()}">${this.tooltip.desc}</p>
                         </div>`
