@@ -297,7 +297,6 @@ class EfsGame extends EfsBase {
 
     //useless as is, but in a futur we should check infos format;
     configureTooltip(infos){
-        console.log('pouet')
         this.tooltip = infos;
     }
 
