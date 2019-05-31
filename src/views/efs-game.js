@@ -266,6 +266,21 @@ class EfsGame extends EfsBase {
         this.mode = DEFAULTEVENT;
     }
 
+    quitGame() {
+        this.shadowRoot.getElementById('quit').textMode = false;
+        Datavault.refGetter.getUser().actions.quitGame(this.game.key).then(ret=>{
+            this.shadowRoot.getElementById('quit').textMode = true;
+            this.showToast({
+                detail:'Game quitted'
+            });
+        }).catch(err=>{
+            this.shadowRoot.getElementById('quit').textMode = true;
+            this.showToast({
+                detail:err.message
+            });
+        });
+    }
+
     render() {
         return html`
             ${this.styles}
@@ -353,7 +368,7 @@ class EfsGame extends EfsBase {
                                 <btn-loader id="relaunch" @click="${this.launchGame}">
                                     relaunch
                                 </btn-loader>
-                                <btn-loader id="quit" @click="${e=>this.emit('quit-game', this.shadowRoot.getElementById('quit'))}">
+                                <btn-loader id="quit" @click="${this.quitGame}">
                                     quit
                                 </btn-loader>
                             </div>

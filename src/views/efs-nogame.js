@@ -46,11 +46,28 @@ class EfsNogame extends EfsBase {
     joinGame(e){
         if(this.shadowRoot.getElementById('token').value){
             this.shadowRoot.getElementById('join-game').textMode = false;
-            this.emit('join-game', this.shadowRoot.getElementById('token').value);
+            Datavault.refGetter.getUser().actions.joinGame(this.shadowRoot.getElementById('token').value).then(ret=>{
+                this.emit('toast-msg', 'Game joined');
+                this.shadowRoot.getElementById('join-game').textMode = true;
+            }).catch(err=>{
+                this.emit('toast-msg', "An issue occured when joining, check the token, reload the page and try again.");
+                this.shadowRoot.getElementById('join-game').textMode = true;
+            });
         }else{
             this.emit('toast-msg', "Please enter a game token before joining");
         }
         
+    }
+
+    createGame() {
+        this.shadowRoot.getElementById('create-game').textMode = false;
+        Datavault.refGetter.getUser().actions.createGame().then(ret=>{
+            this.emit('toast-msg', 'Game created');
+            this.shadowRoot.getElementById('create-game').textMode = true;
+        }).catch(err=>{
+            this.emit('toast-msg', err.message);
+            this.shadowRoot.getElementById('create-game').textMode = true;
+        });
     }
 
     displayNews(news){
@@ -72,10 +89,7 @@ class EfsNogame extends EfsBase {
                         <p>
                             Create a new game, you'll have a token for your friends to join.
                         </p>   
-                        <btn-loader id="create-game" @click="${e=>{
-                            this.shadowRoot.getElementById('create-game').textMode = false;
-                            this.emit('create-game', e.details);
-                        }}">
+                        <btn-loader id="create-game" @click="${this.createGame}">
                             create
                         </btn-loader>
                     </div>
