@@ -68,22 +68,24 @@ export class Game extends FireReference {
 
                 this.data.game.deadChars = this.data.game.deadChars ? [...this.data.game.deadChars, char] : [char];
 
-                if (this.data.game.liveChars.length === 1) {
-                    this.data.game = this.finishGame(this.data.game);
-                } else {
-                    this.data.game = this.passTurn(this.data.game);
-                }
+                this.data.game = this.passTurn(this.data.game);
+
                 this.save();
             }
         }
     }
 
     passTurn(game) {
-        game.gameInfo.turn++;
-        game.gameInfo.toPlay++;
-        if (game.gameInfo.toPlay >= game.players.length) {
-            game.gameInfo.toPlay = 0;
+        if (this.data.game.liveChars.length === 1) {
+            game = this.finishGame(game);
+        } else {
+            game.gameInfo.turn++;
+            game.gameInfo.toPlay++;
+            if (game.gameInfo.toPlay >= game.players.length) {
+                game.gameInfo.toPlay = 0;
+            }
         }
+        
 
         return game;
     }
