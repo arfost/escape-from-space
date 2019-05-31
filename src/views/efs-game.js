@@ -3,6 +3,7 @@ import { EfsBase } from '../efs-base.js';
 import Datavault from '../datavault.js';
 
 import '../components/game-popin.js';
+import  '../components/btn-loader.js';
 
 const DEFAULTEVENT = {
     name:'default',
@@ -234,10 +235,16 @@ class EfsGame extends EfsBase {
     }
 
     launchGame(){
+        this.shadowRoot.getElementById('relaunch').textMode = false;
+        this.shadowRoot.getElementById('launch').textMode = false;
         this.gameRef.actions.launchGame(this.user.game).then(()=>{
             this.emit('toast-msg', 'Game started');
+            this.shadowRoot.getElementById('relaunch').textMode = true;
+            this.shadowRoot.getElementById('launch').textMode = true;
         }).catch(e=>{
-            this.emit('toast-msg', 'Error : the game could not be started')
+            this.emit('toast-msg', 'Error : the game could not be started');
+            this.shadowRoot.getElementById('relaunch').textMode = true;
+            this.shadowRoot.getElementById('launch').textMode = true;
         });
     }
 
@@ -285,6 +292,22 @@ class EfsGame extends EfsBase {
         this.mode = DEFAULTEVENT;
     }
 
+    quitGame() {
+        this.shadowRoot.getElementById('quit').textMode = false;
+        Datavault.refGetter.getUser().actions.quitGame(this.game.key).then(ret=>{
+            this.shadowRoot.getElementById('quit').textMode = true;
+            this.showToast({
+                detail:'Game quitted'
+            });
+        }).catch(err=>{
+            this.shadowRoot.getElementById('quit').textMode = true;
+            this.showToast({
+                detail:err.message
+            });
+        });
+      
+    }
+  
     displayTooltip(){
         if(this.tooltip){
             return html`<div class="flex-box f-vertical f-j-space f-a-end tooltip card" style="background-image:url('${this.tooltip.picture}')" @mouseout="${e=>this.configureTooltip(false)}">
@@ -354,14 +377,14 @@ class EfsGame extends EfsBase {
                             <div class="flex-box f-horizontal">
                                 ${(this.mode.name === 'SELECTHERO' ? this.mode.params : []).map(char => html`<div @click="${e => this.selectHero(char)}">${this.makeChar(char, 'select-char')}</div>`)}
                             </div>
-                            <div class="flex-box f-vertical f-j-end">
+                            <div class="flex-box f-vertical f-j-end f-a-center">
                                 ${this.mode.canMove ?
-                                    html`<button class="btn btn-outline-secondary mb-1" @click="${e => { this.mode = Object.assign({}, this.mode, {isMove:!this.mode.isMove}); console.log('poeut') }}">
+                                    html`<btn-loader class="mb-1" @click="${e => { this.mode = Object.assign({}, this.mode, {isMove:!this.mode.isMove}); console.log('poeut') }}">
                                         mode : ${this.mode.isMove ? `move` : `kill`}
-                                    </button>`:`.`}
-                                <button class="btn btn-outline-secondary" @click="${this.cancel}">
+                                    </btn-loader>`:``}
+                                <btn-loader @click="${this.cancel}">
                                     cancel
-                                </button>
+                                </btn-loader>
                             </div>
                         </div>
                     </game-popin>
@@ -386,12 +409,12 @@ class EfsGame extends EfsBase {
                                 </div>
                             </div>
                             <div class="flex-box f-horizontal">
-                                <button class="btn btn-outline-secondary" @click="${this.launchGame}">
+                                <btn-loader id="relaunch" @click="${this.launchGame}">
                                     relaunch
-                                </button>
-                                <button class="btn btn-outline-secondary" @click="${e=>this.emit('quit-game')}">
+                                </btn-loader>
+                                <btn-loader id="quit" @click="${this.quitGame}">
                                     quit
-                                </button>
+                                </btn-loader>
                             </div>
                         </div>
                     </game-popin>
@@ -411,9 +434,9 @@ class EfsGame extends EfsBase {
                                 ${this.displayToken()}
                             </div>
                             <div>
-                                <button class="btn btn-outline-secondary" @click="${this.launchGame}">
+                                <btn-loader id="launch" @click="${this.launchGame}">
                                     launch
-                                </button>
+                                </btn-loader>
                             </div>
                         </div>
                     </game-popin>`:

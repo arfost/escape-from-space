@@ -138,7 +138,8 @@ export class Game extends FireReference {
             ready: game.ready,
             score: game.score,
             loaded: game.loaded,
-            finished: game.finished
+            finished: game.finished,
+            key:this.id
         };
         return data;
     }

@@ -17,10 +17,6 @@ class EfsMain extends EfsBase {
         })
     }
 
-    firstUpdated(changedProperties) {
-        this.addEventListener('toat-msg', this.showToast);
-    }
-
     showToast(e){
         this.toastMsg = e.detail;
         // Get the snackbar DIV
@@ -93,30 +89,6 @@ class EfsMain extends EfsBase {
         });
     }
 
-    createGame(){
-        this.loginRef.actions.createGame().then(ret=>{
-            this.showToast({
-                detail:'Game created'
-            });
-        }).catch(err=>{
-            this.showToast({
-                detail:err.message
-            });
-        });
-    }
-
-    joinGame(e){
-        this.loginRef.actions.joinGame(e.detail).then(ret=>{
-            this.showToast({
-                detail:'Game joined'
-            });
-        }).catch(err=>{
-            this.showToast({
-                detail:err.message
-            });
-        });
-    }
-
     static get properties() {
         return {
             user: Object,
@@ -124,24 +96,12 @@ class EfsMain extends EfsBase {
         }
     }
 
-    quitGame(){
-        this.loginRef.actions.quitGame(this.user.game).then(ret=>{
-            this.showToast({
-                detail:'Game quitted'
-            });
-        }).catch(err=>{
-            this.showToast({
-                detail:err.message
-            });
-        });
-    }
-
     render() {
         return html`
             ${this.styles}
             ${this.user.game ? 
-                html`<efs-game .user="${this.user}" @toast-msg="${this.showToast}" @quit-game="${this.quitGame}"></efs-game>`:
-                html`<efs-nogame .user="${this.user}" @create-game="${this.createGame}" @join-game="${this.joinGame}"></efs-nogame>`}
+                html`<efs-game .user="${this.user}" @toast-msg="${this.showToast}"></efs-game>`:
+                html`<efs-nogame .user="${this.user}" @toast-msg="${this.showToast}"></efs-nogame>`}
             <fab-img @click="${this.toggleLogin}" .src="${this.user.photoURL}"></fab-img>
             <div id="snackbar">${this.toastMsg}</div>`;
     }
