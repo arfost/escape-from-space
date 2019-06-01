@@ -217,7 +217,7 @@ class EfsGame extends EfsBase {
         return html`<div 
                         @click="${e=>this.roomClicked(room)}"
                         class="room ${room.orientation} flex-box f-j-center f-a-center scroll ${room.orientation === 'NS' ? 'f-vertical' : 'f-horizontal'} ${(this.selectable && this.selectable.includes(room.id)) ? 'selectable' : ''}" 
-                        style="grid-column:${room.pos.x}/span ${room.orientation === 'NS' ? 2 : 4};grid-row:${room.pos.y}/span ${room.orientation === 'NS' ? 4 : 2}">
+                        style="grid-column:${room.pos.x+1}/span ${room.orientation === 'NS' ? 2 : 4};grid-row:${room.pos.y+1}/span ${room.orientation === 'NS' ? 4 : 2}">
                             ${charsInRoom.map(char => this.makeChar(char))}
                             ${room.chest ? html`<div class="chest" @mouseover="${e=>this.configureTooltip(CHESTDESC)}"></div>` : ``}
                             ${room.exit ? html`<div class="exit ${room.chest && room.exit ? 'selectable' : ''}" @mouseover="${e=>this.configureTooltip(EXITGATE)}"></div>` : ``}
