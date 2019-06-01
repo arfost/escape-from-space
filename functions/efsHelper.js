@@ -1,148 +1,215 @@
+/* eslint-disable no-loop-func */
 const NS = 'NS';
 const EO = 'EO';
 
-module.exports.newMap = function () {
-    return [{
-            id: 1,
-            exit: true,
-            chest: false,
-            pos: {
-                x: 2,
-                y: 2,
-            },
-            orientation: NS,
-            connections: {
-                rooms: [2],
-                directions: ['E']
-            }
-        },
-        {
-            id: 2,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 4,
-                y: 3,
-            },
-            orientation: EO,
-            connections: {
-                rooms: [1, 3],
-                directions: ['O', 'S']
-            }
-        },
-        {
-            id: 3,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 5,
-                y: 5,
-            },
-            orientation: NS,
-            connections: {
-                rooms: [2, 5, 4],
-                directions: ['O', 'E', 'S']
-            }
-        },
-        {
-            id: 4,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 4,
-                y: 9,
-            },
-            orientation: EO,
-            connections: {
-                rooms: [3],
-                directions: ['N']
-            }
-        },
-        {
-            id: 5,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 7,
-                y: 6,
-            },
-            orientation: EO,
-            connections: {
-                rooms: [3, 6],
-                directions: ['O', 'E']
-            }
-        },
-        {
-            id: 6,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 11,
-                y: 5,
-            },
-            orientation: NS,
-            connections: {
-                rooms: [5, 7],
-                directions: ['O', 'S']
-            }
-        },
-        {
-            id: 7,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 11,
-                y: 9,
-            },
-            orientation: NS,
-            connections: {
-                rooms: [6, 9, 8],
-                directions: ['N', 'E', 'S']
-            }
-        },
-        {
-            id: 8,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 10,
-                y: 13,
-            },
-            orientation: EO,
-            connections: {
-                rooms: [7],
-                directions: ['N']
-            }
-        },
-        {
-            id: 9,
-            exit: false,
-            chest: false,
-            pos: {
-                x: 13,
-                y: 10,
-            },
-            orientation: EO,
-            connections: {
-                rooms: [7, 10],
-                directions: ['O', 'N']
-            }
-        },
-        {
-            id: 10,
-            exit: false,
-            chest: true,
-            pos: {
-                x: 14,
-                y: 6,
-            },
-            orientation: NS,
-            connections: {
-                rooms: [9],
-                directions: ['S']
+class DungeonGenerator {
+
+    getNewDungeon(size){
+        this.rooms = [];
+
+        let activeRoom = this.getNextRoom();
+        this.rooms.push(activeRoom);
+
+        while(this.rooms.length<size){
+            let connection = this.findNextConnection(activeRoom);
+            if(connection){
+                
+                let newRoom = this.getNextRoom(activeRoom, connection);
+                if(this.isOnAnotherRoom(this.rooms, newRoom)){
+                    let parent = this.rooms.find(room=>room.id === activeRoom.id -1);
+                    activeRoom = parent ? parent : activeRoom;
+                    continue;
+                }
+                activeRoom.connections.rooms.push(newRoom.id);
+                activeRoom.connections.directions.push(connection.direction);
+
+                newRoom.connections.rooms.push(activeRoom.id);
+                newRoom.connections.directions.push(this.inverseDirection(connection.direction));
+
+                activeRoom = newRoom;
+                this.rooms.push(activeRoom);
+            }else{
+                let parent = this.rooms.find(room=>room.id === activeRoom.id -1);
+                activeRoom = parent ? parent : this.rooms[this.rooms.length-1];
             }
         }
-    ]
+
+        this.rooms[this.rooms.length-1].chest = true;
+        console.log(JSON.stringify(this.rooms, null, 4))
+        return this.rooms;
+    }
+
+    inverseDirection(direction){
+        switch(direction){
+            case 'N': return 'S';
+            case 'S': return 'N';
+            case 'E': return 'O';
+            case 'O': return 'E';
+        }
+        throw new Error("unknow direction ", )
+    }
+
+    getSquarePos(pos, orientation){
+        return {
+            x:pos.x,
+            y:pos.y,
+            xMax:pos.x+(orientation === NS ? 2 : 4),
+            yMax:pos.y+(orientation === EO ? 2 : 4)
+        }
+    }
+
+    isOnAnotherRoom(rooms, newRoom){
+        let rect2 = this.getSquarePos(newRoom.pos, newRoom.orientation);
+        for(let room of rooms){
+            let rect1 = this.getSquarePos(room.pos, room.orientation);
+            if(rect1.x < rect2.xMax &&
+                rect1.xMax > rect2.x &&
+                rect1.y < rect2.yMax &&
+                rect1.yMax > rect2.y){
+                    return true;
+                }
+        }
+        return false;
+    }
+
+    findNextConnection(room){
+        
+        let possible = [];
+        
+        //test north
+        let posNordNS = this.createPosForRoom(room, 'N', )
+        if(room.pos.y-2 > 0 && !room.connections.directions.includes('N')){
+            possible.push({
+                orientationConstraint:room.pos.y-4>0 ? undefined: 2,
+                direction:'N'
+            })
+        }
+
+        //test south
+        if(room.pos.y+2 < 15 && !room.connections.directions.includes('S')){
+            possible.push({
+                orientationConstraint:room.pos.y+4 < 15 ? undefined: 2,
+                direction:'S'
+            })
+        }
+
+        //test ouest
+        if(room.pos.x-2 > 1 && !room.connections.directions.includes('O')){
+            possible.push({
+                orientationConstraint:room.pos.y-4 > 1 ? undefined: 1,
+                direction:'O'
+            })
+        }
+
+        //test east
+        if(room.pos.x+2 < 15 && !room.connections.directions.includes('E')){
+            possible.push({
+                orientationConstraint:room.pos.y+4 < 15 ? undefined: 1,
+                direction:'E'
+            })
+        }
+
+        return possible.find(p=>getDice(1,100)<25);
+    }
+
+    getNextRoom(connectedRomm, link){
+
+        let orientation = this.getOrientation(link ? link.orientationConstraint : undefined);
+        let pos = connectedRomm ? this.createPosForRoom(connectedRomm, link.direction, connectedRomm.orientation, orientation) : {x:7, y:7}
+
+        return {
+            id: this.rooms.length+1,
+            exit: this.rooms.length+1 === 1,
+            chest: false,
+            pos: pos,
+            orientation: orientation,
+            connections: {
+                rooms: [],
+                directions: []
+            }
+        }
+    }
+
+    createPosForRoom(connectedRomm, direction, selfOrientation){
+        let x = connectedRomm.pos.x;
+        let y = connectedRomm.pos.y;
+
+        let orientation = connectedRomm.orientation;
+
+        if(direction === 'N'){
+            if(orientation === NS){
+                if(selfOrientation === EO){
+                    x -= 1;
+                    y +=2;
+                }
+                y -= 4;
+            }
+            if(orientation === EO){
+                if(selfOrientation === NS){
+                    x += 1;
+                }
+                y -= 2;
+            }
+        }
+
+        if(direction === 'S'){
+            if(orientation === NS){
+                if(selfOrientation === EO){
+                    x -= 1;
+                }
+                y += 4;
+            }
+            if(orientation === EO){
+                if(selfOrientation === NS){
+                    x += 1;
+                }
+                y += 2;
+            }
+        }
+
+        if(direction === 'E'){
+            if(orientation === NS){
+                if(selfOrientation === EO){
+                    y += 1;
+                }
+                x += 2;
+            }
+            if(orientation === EO){
+                if(selfOrientation === NS){
+                    y -= 1;
+                }
+                x += 4;
+            }
+        }
+
+        if(direction === 'O'){
+            if(orientation === NS){
+                if(selfOrientation === EO){
+                    y -= 1;
+                }
+                x -= 2;
+            }
+            if(orientation === EO){
+                if(selfOrientation === NS){
+                    y -= 1;
+                    x += 2;
+                }
+                x -= 4;
+            }
+        }
+        return {x, y}
+    }
+
+    getOrientation(orientationConstraint = getDice(1,2)){
+        return  orientationConstraint === 1 ? NS:EO;
+    }
+
+}
+
+const generator = new DungeonGenerator();
+
+module.exports.newMap = function () {
+    return generator.getNewDungeon(10);
 }
 
 module.exports.getChars = function () {
@@ -150,7 +217,8 @@ module.exports.getChars = function () {
             name: "Char A",
             picture: "https://dummyimage.com/150x150/000/fff.png&text=A",
             id: 0,
-            alive: true
+            alive: true,
+            desc: "Smith n'est bien entendu pas de réel nom de Yuri, le mécano du vaisseau. Après avoir fuit la station de réparation sur laquelle il travaillait à cause d'une erreur banale commise sur le vaisseau d'un parrain mafieu tout sauf banal. Depuis, Yuri se fait discret, mais cette fois il va tout donner. Qu'importe le nombre de capsules, un jour il reverra sa famille."
         },
         {
             name: "Char B",
@@ -202,7 +270,7 @@ module.exports.getChars = function () {
     return chars;
 }
 
-module.exports.getDice = function (min, max) {
+const getDice = function (min, max) {
     if (typeof max === 'undefined') {
         max = min;
         min = 1;
@@ -211,6 +279,8 @@ module.exports.getDice = function (min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
 }
+
+module.exports.getDice = getDice;
 
 module.exports.shuffleArray = function (a) {
     for (let i = a.length - 1; i > 0; i--) {

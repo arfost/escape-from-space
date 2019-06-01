@@ -154,6 +154,8 @@ class EfsGame extends EfsBase {
     }
 
     roomClicked(room){
+        console.log("hey room", room)
+
         let turnPlayer = this.game.players[this.game.gameInfo.toPlay];
         if(turnPlayer.uid !== this.user.uid){
             this.emit('toast-msg', `Turn is to ${this.game.players[this.game.gameInfo.toPlay].name}.`)
@@ -362,6 +364,9 @@ class EfsGame extends EfsBase {
                                         ${this.selfChars().map(char => this.makeChar(char))}
                                     </div>
                                     <p>The more late they die, the more points you win.</p>
+                                    <btn-loader id="launch" @click="${this.launchGame}">
+                                    launch
+                                </btn-loader>
                                 </div>`:
                         `loading`
                     }
