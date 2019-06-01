@@ -364,9 +364,9 @@ class EfsGame extends EfsBase {
                                         ${this.selfChars().map(char => this.makeChar(char))}
                                     </div>
                                     <p>The more late they die, the more points you win.</p>
-                                    <btn-loader id="launch" @click="${this.launchGame}">
-                                    launch
-                                </btn-loader>
+                                    <btn-loader id="quit" @click="${this.quitGame}">
+                                        quit
+                                    </btn-loader>
                                 </div>`:
                         `loading`
                     }

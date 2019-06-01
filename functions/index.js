@@ -88,6 +88,8 @@ exports.launchGame = functions.https.onCall((key, context)=>{
 
         game.liveChars = efsHelper.getChars();
         game.deadChars = [];
+
+        delete game.exitedChar;
         
         let charsKey = [];
         let roomKey = [];
