@@ -5,6 +5,7 @@ import Datavault from '../datavault.js'
 import '../components/fab-img.js'
 import '../views/efs-nogame.js'
 import '../views/efs-game.js'
+import "../components/font-awesomeness";
 
 class EfsMain extends EfsBase {
 
@@ -16,6 +17,10 @@ class EfsMain extends EfsBase {
             this.user = user;
         })
     }
+
+    createRenderRoot() {
+        return this;
+      }
 
     showToast(e){
         this.toastMsg = e.detail;
@@ -98,11 +103,21 @@ class EfsMain extends EfsBase {
 
     render() {
         return html`
+            <!-- <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous"> -->
             ${this.styles}
+            <div id="loginBox" class="card" style="
+                position:fixed;
+                min-height:100px;
+                min-width:100px;
+                background-color:var(--success-color);
+                "
+            >
+                <font-awesomeness .iconAwe="${'fab fa-google'}"></font-awesomeness>    
+            </div>
             ${this.user.game ? 
                 html`<efs-game .user="${this.user}" @toast-msg="${this.showToast}"></efs-game>`:
                 html`<efs-nogame .user="${this.user}" @toast-msg="${this.showToast}"></efs-nogame>`}
-            <fab-img @click="${this.toggleLogin}" .src="${this.user.photoURL}"></fab-img>
+            <!-- <fab-img @click="${this.toggleLogin}" .src="${this.user.photoURL}"></fab-img> -->
             <div id="snackbar">${this.toastMsg}</div>`;
     }
 }

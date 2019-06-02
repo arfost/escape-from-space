@@ -223,7 +223,7 @@ export class LoginReference extends FireReference {
                 email: "anonymous@anonymous.com",
                 displayName: "anonymous",
                 isAnonymous: true,
-                photoURL: "https://dummyimage.com/200x200/000/fff.png&text=A"
+                photoURL: "./img/icons/sharp_power_settings_new_black_18dp.png"
             }
         };
     }

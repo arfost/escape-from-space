@@ -10,7 +10,9 @@ export class EfsBase extends LitElement {
     }
 
     get styles() {
-        return html`<style>
+        return html`
+        
+        <style>
             ${this.sharedStyles}
             ${this.selfStyles}
         </style>`

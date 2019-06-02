@@ -30,7 +30,7 @@ const polyfills = [
 
 const assets = [
   {
-    from: 'src/img',
+    from: 'src/assets/img',
     to: 'img/'
   },
   'src/manifest.webmanifest'

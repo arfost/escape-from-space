@@ -20,7 +20,7 @@ export class FabImg extends LitElement {
             .fab {
                 width: 70px;
                 height: 70px;
-                background-color: red;
+                background-color: white;
                 border-radius: 50%;
                 box-shadow: 0 6px 10px 0 #666;
                 transition: all 0.1s ease-in-out;
