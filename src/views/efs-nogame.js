@@ -3,7 +3,8 @@ import Datavault from '../datavault.js';
 import { EfsBase } from '../efs-base.js';
 
 import  '../components/btn-loader.js';
-import '../components/fab-img.js'
+import '../components/fab-img.js';
+import '../components/font-awesomeness.js';
 
 class EfsNogame extends EfsBase {
 
@@ -72,7 +73,7 @@ class EfsNogame extends EfsBase {
                     <div class="card" ?hidden="${this.user.isAnonymous}">
                         <h4>New game</h4>
                         <p>
-                            Create a new game, you'll have a token for your friends to join.
+                            Create a new game, you'll have a token for your friends to join. 
                         </p>   
                         <btn-loader id="create-game" @click="${this.createGame}">
                             create
@@ -95,7 +96,7 @@ class EfsNogame extends EfsBase {
                     <div class="card" ?hidden="${!this.user.isAnonymous}">
                         <h4>Welcome</h4>
                         <p>
-                            To log in the game, please click on the black A
+                            To log in the game, please click on the black A <font-awesomeness .iconAwe="${'fa-thumbs-up'}"></font-awesomeness>
                         </p>
                     </div>
                 </div>
