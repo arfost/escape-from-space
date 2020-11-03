@@ -29,8 +29,6 @@ export class FabImg extends LitElement {
                 color: white;
                 text-align: center;
                 line-height: 70px;
-            
-                position: fixed;
                 left: 1em;
                 top: 1em;
             }

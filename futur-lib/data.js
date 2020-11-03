@@ -34,14 +34,14 @@ export class Dao {
 export class FireReference {
 
     constructor() {
-        this.initConnection();
+        this.listeners = [];
     }
 
     get params() {
         return {}
     }
 
-    initConnection() {
+    initConnection(noDefault) {
         this.data = {};
         if (this.connection) {
             for (let connection in this.connection) {
@@ -50,8 +50,9 @@ export class FireReference {
         }
         let connection = {};
         for (let source in this.sources) {
-
-            this.data[source] = this.defaultValues[source];
+            if(!noDefault){
+                this.data[source] = this.defaultValues[source];
+            }
             connection[source] = this.initSource(this.sources[source], this.params[source]);
             connection[source].on('value', snap => {
                 let tmp = snap.val();
@@ -65,9 +66,9 @@ export class FireReference {
     }
 
     on(event, listener) {
-        this.listener = listener;
+        this.listeners.push(listener);
         if (this.formattedData) {
-            this.listener(this.formattedData);
+            listener(this.formattedData);
         }
     }
 
@@ -108,7 +109,7 @@ export class FireReference {
                 }
             }
         }
-        firebase.database().ref().update(updates);
+        return firebase.database().ref().update(updates);
     }
 
     newDatas() {
@@ -117,8 +118,8 @@ export class FireReference {
         }
         let deepCopiedData = JSON.parse(JSON.stringify(this.data))
         this.formattedData = this.formatDatas(deepCopiedData);
-        if (this.listener) {
-            this.listener(this.formattedData);
+        for(let listener of this.listeners){
+            listener(this.formattedData);
         }
     }
 
@@ -146,13 +147,13 @@ export class LoginReference extends FireReference {
                 // User is signed in.
                 this.uid = user.uid;
 
-                this.initConnection();
+                this.initConnection(true);
                 this.actions.setUser({
                     email: user.email,
                     displayName: user.displayName,
                     isAnonymous: user.isAnonymous,
                     photoURL: user.photoURL
-                })
+                });
 
                 // [START_EXCLUDE]
                 // [END_EXCLUDE]
@@ -175,17 +176,23 @@ export class LoginReference extends FireReference {
                     provider.addScope('https://www.googleapis.com/auth/plus.login');
                     // [END addscopes]
                     // [START signin]
-                    firebase.auth().signInWithRedirect(provider);
+                    return firebase.auth().signInWithRedirect(provider);
                     // [END signin]
                 } else {
                     // [START signout]
-                    firebase.auth().signOut();
+                    return firebase.auth().signOut();
                     // [END signout]
                 }
             },
             setUser: user => {
                 this.data.user = user;
                 this.save();
+            },
+            updateInfos: infos => {
+                if(infos.name){
+                    this.data.user.customName = infos.name;
+                }
+                return this.save();
             },
             emptyUser: () => {
                 if (this.data) {
@@ -204,7 +211,10 @@ export class LoginReference extends FireReference {
     }
 
     formatDatas({user, permissions}) {
-        user = user ? user : this.defaultValues.user;
+        if(!user){
+            return 
+        }
+        user.displayName = user.customName ? user.customName : user.displayName;
         user.uid = this.uid;
         user.permissions = permissions ? permissions : [];
         return user;

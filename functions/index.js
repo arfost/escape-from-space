@@ -13,15 +13,17 @@ admin.initializeApp();
 //  response.send("Hello from Firebase!");
 // });
 
-exports.createGame = functions.https.onCall((datas, context)=>{
+exports.createGame = functions.https.onCall(async(datas, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
     let gameRef = admin.database().ref('games').push();
 
+    let user = (await admin.database().ref('users/'+uid).once('value')).val();
+
     let game = {
         players : [{
-            uid:uid,
-            name:'roger 1'
+            uid: uid,
+            name: user.customName ? user.customName : user.displayName
         }],
         ready: false,
         loaded:true,
@@ -34,10 +36,12 @@ exports.createGame = functions.https.onCall((datas, context)=>{
     
 });
 
-exports.joinGame = functions.https.onCall((key, context)=>{
+exports.joinGame = functions.https.onCall(async(key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
     let gameRef = admin.database().ref('games/'+key);
+
+    let user = (await admin.database().ref('users/'+uid).once('value')).val();
     
     return gameRef.once('value').then(snap=>{
         let game = snap.val();
@@ -47,7 +51,7 @@ exports.joinGame = functions.https.onCall((key, context)=>{
         }
         game.players.push({
             uid:uid,
-            name:'roger '+(game.players.length+1)
+            name:user.customName ? user.customName : user.displayName,
         })
         
         return admin.database().ref('games/'+key).set(game).then(res=>{

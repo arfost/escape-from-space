@@ -114,11 +114,14 @@ export class Game extends FireReference {
         while (done < game.players.length) {
             let char = deadCharsCopy.pop();
             for (let player of game.players) {
-                if (player.chars.includes(char.id) && game.score[player.name].manche === 0) {
+                if (player.chars.includes(char.id)){
+                  char.owner = player.name;
+                  if(game.score[player.name].manche === 0) {
                     game.score[player.name].manche = deadCharsCopy.length;
                     game.score[player.name].total += game.score[player.name].manche;
                     done++;
-                }
+                  }
+                }  
             }
         }
         game.finished = true;

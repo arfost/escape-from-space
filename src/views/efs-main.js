@@ -2,7 +2,7 @@ import { html, css } from 'lit-element';
 import { EfsBase } from '../efs-base.js'
 import Datavault from '../datavault.js'
 
-import '../components/fab-img.js'
+import '../components/user-profil.js'
 import '../views/efs-nogame.js'
 import '../views/efs-game.js'
 
@@ -77,18 +77,6 @@ class EfsMain extends EfsBase {
           }`
     }
 
-    toggleLogin() {
-        this.loginRef.actions.toggleLogin().then(ret=>{
-            this.showToast({
-                detail:'Logged in'
-            });
-        }).catch(err=>{
-            this.showToast({
-                detail:err.message
-            });
-        });
-    }
-
     static get properties() {
         return {
             user: Object,
@@ -102,7 +90,7 @@ class EfsMain extends EfsBase {
             ${this.user.game ? 
                 html`<efs-game .user="${this.user}" @toast-msg="${this.showToast}"></efs-game>`:
                 html`<efs-nogame .user="${this.user}" @toast-msg="${this.showToast}"></efs-nogame>`}
-            <fab-img @click="${this.toggleLogin}" .src="${this.user.photoURL}"></fab-img>
+            <user-profil @user-msg="${this.showToast}" @user-error="${this.showToast}"></user-profil>
             <div id="snackbar">${this.toastMsg}</div>`;
     }
 }

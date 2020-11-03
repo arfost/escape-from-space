@@ -369,57 +369,66 @@ module.exports.newMap = function () {
 
 module.exports.getChars = function () {
     let chars = [{
-            name: "Char A",
-            picture: "https://dummyimage.com/150x150/000/fff.png&text=A",
+            name: "The tourist",
+            picture: "/img/game/char1.png",
             id: 0,
             alive: true,
-            desc: "Smith n'est bien entendu pas de réel nom de Yuri, le mécano du vaisseau. Après avoir fuit la station de réparation sur laquelle il travaillait à cause d'une erreur banale commise sur le vaisseau d'un parrain mafieu tout sauf banal. Depuis, Yuri se fait discret, mais cette fois il va tout donner. Qu'importe le nombre de capsules, un jour il reverra sa famille."
+            desc: "Dummy char desc 1"
         },
         {
-            name: "Char B",
-            picture: "https://dummyimage.com/150x150/d10fd1/0011ff.png&text=B",
+            name: "The mecano",
+            picture: "/img/game/char2.png",
             id: 1,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 2"
         }, {
-            name: "Char C",
-            picture: "https://dummyimage.com/150x150/26cf10/ff0000.png&text=C",
+            name: "The savage warrior",
+            picture: "/img/game/char3.png",
             id: 2,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 3"
         }, {
-            name: "Char D",
-            picture: "https://dummyimage.com/150x150/4800ff/bfff00.png&text=D",
+            name: "The comm guy",
+            picture: "/img/game/char4.png",
             id: 3,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 4"
         }, {
-            name: "Char E",
-            picture: "https://dummyimage.com/150x150/00ff91/ad00bd.png&text=E",
+            name: "The showbiz star",
+            picture: "/img/game/char5.png",
             id: 4,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 5"
         }, {
-            name: "Char F",
-            picture: "https://dummyimage.com/150x150/00b7ff/0026ff.png&text=F",
+            name: "The scientist",
+            picture: "/img/game/char6.png",
             id: 5,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 6"
         }, {
-            name: "Char G",
-            picture: "https://dummyimage.com/150x150/ccff00/00ff15.png&text=G",
+            name: "The doctor",
+            picture: "/img/game/char7.png",
             id: 6,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 7"
         }, {
-            name: "Char H",
-            picture: "https://dummyimage.com/150x150/00ff1e/0000ff.png&text=H",
+            name: "The strange guy",
+            picture: "/img/game/char8.png",
             id: 7,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 8"
         }, {
-            name: "Char I",
-            picture: "https://dummyimage.com/150x150/ff0000/7bff00.png&text=I",
+            name: "The captain",
+            picture: "/img/game/char9.png",
             id: 8,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 9"
         }, {
-            name: "Char J",
-            picture: "https://dummyimage.com/150x150/0000ff/ff0000.png&text=J",
+            name: "The security guy",
+            picture: "/img/game/char10.png",
             id: 9,
-            alive: true
+            alive: true,
+            desc: "Dummy char desc 10"
         }
     ]
     return chars;

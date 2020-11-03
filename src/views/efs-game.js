@@ -121,7 +121,7 @@ class EfsGame extends EfsBase {
             left:1vh;
             background-position:5% 5%;
             background-repeat:no-repeat;
-            min-height:30vh;
+            min-height:45vh;
             min-width:10vh;
         }
         .tooltip * {
@@ -150,7 +150,7 @@ class EfsGame extends EfsBase {
     }
 
     makeChar(char={}, customClass=''){
-        return html`<img src="${char.picture}" class="char ${customClass}" @mouseover="${e=>this.configureTooltip(char)}" />` 
+        return html`<img src="${char.picture}" class="char ${customClass}" @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(char)}" />` 
     }
 
     roomClicked(room){
@@ -219,8 +219,8 @@ class EfsGame extends EfsBase {
                         class="room ${room.orientation} flex-box f-j-center f-a-center scroll ${room.orientation === 'NS' ? 'f-vertical' : 'f-horizontal'} ${(this.selectable && this.selectable.includes(room.id)) ? 'selectable' : ''}" 
                         style="grid-column:${room.pos.x+1}/span ${room.orientation === 'NS' ? 2 : 4};grid-row:${room.pos.y+1}/span ${room.orientation === 'NS' ? 4 : 2}">
                             ${charsInRoom.map(char => this.makeChar(char))}
-                            ${room.chest ? html`<div class="chest" @mouseover="${e=>this.configureTooltip(CHESTDESC)}"></div>` : ``}
-                            ${room.exit ? html`<div class="exit ${room.chest && room.exit ? 'selectable' : ''}" @mouseover="${e=>this.configureTooltip(EXITGATE)}"></div>` : ``}
+                            ${room.chest ? html`<div class="chest" @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(CHESTDESC)}"></div>` : ``}
+                            ${room.exit ? html`<div class="exit ${room.chest && room.exit ? 'selectable' : ''}" @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(EXITGATE)}"></div>` : ``}
                         </div>` 
     }
 
@@ -435,7 +435,6 @@ class EfsGame extends EfsBase {
                                 <h3>Preparing</h3>
                                 <p>You can invite people to this game by giving this token above. There is no chat for now, so use any other messaging system you'd like for that.</p>
                                 <p>When ready, click the button on the right.</p>
-                                <p>By the way, everybody is roger for now but you are the red one, futur version should change that.</p>
                                 ${this.displayToken()}
                             </div>
                             <div>
