@@ -4,6 +4,7 @@ import Datavault from '../datavault.js';
 
 import '../components/game-popin.js';
 import  '../components/btn-loader.js';
+import '../components/icon-overtip.js';
 
 const DEFAULTEVENT = {
     name:'default',
@@ -150,7 +151,7 @@ class EfsGame extends EfsBase {
     }
 
     makeChar(char={}, customClass=''){
-        return html`<div class="char ${customClass}"><img src="${char.picture}"  @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(char)}" /></div>` 
+        return html`<img src="${char.picture}" class="char ${customClass}" @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(char)}" />` 
     }
 
     roomClicked(room){
@@ -298,14 +299,10 @@ class EfsGame extends EfsBase {
         this.shadowRoot.getElementById('quit').textMode = false;
         Datavault.refGetter.getUser().actions.quitGame(this.game.key).then(ret=>{
             this.shadowRoot.getElementById('quit').textMode = true;
-            this.showToast({
-                detail:'Game quitted'
-            });
+            this.emit('toast-msg', 'Game quitted');
         }).catch(err=>{
             this.shadowRoot.getElementById('quit').textMode = true;
-            this.showToast({
-                detail:err.message
-            });
+            this.emit('toast-msg', err.message);
         });
       
     }
@@ -347,23 +344,22 @@ class EfsGame extends EfsBase {
                                     <p>Turn of ${this.game.players[this.game.gameInfo.toPlay].name}</p>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center">
-                                    <h4>Dead chars (older to newer -->)</h4>
+                                    <h4>Dead chars<icon-overtip class="fas fa-question-circle ml-1" color="white" size="1em" overtip="From older to newer, the list of characters that have already died."></h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center f-wrap">
                                         ${this.game.deadChars.map(char => this.makeChar(char))}
                                     </div>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center" ?hidden=${!this.game.exitedChar}>
-                                    <h4>He has escape</h4>
+                                    <h4>He has escape <icon-overtip class="fas fa-question-circle ml-1" color="white" size="1em" overtip="This character has escaped and will survive. His owner will have the most points on this game."></h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center f-wrap">
                                         ${this.makeChar(this.game.exitedChar)}
                                     </div>
                                 </div>
                                 <div class="flex-box f-vertical f-j-center f-a-center">
-                                    <h4>Your chars</h4>
+                                    <h4>Your chars <icon-overtip class="fas fa-question-circle ml-1" color="white" size="1em" overtip="They are the characters you must help to survive. The more late they die, the more points you win."></icon-overtip></h4>
                                     <div class="flex-box f-horizontal f-js-end f-j-center f-a-center">
                                         ${this.selfChars().map(char => this.makeChar(char))}
                                     </div>
-                                    <p>The more late they die, the more points you win.</p>
                                     <btn-loader id="quit" @click="${this.quitGame}">
                                         quit
                                     </btn-loader>
@@ -400,7 +396,7 @@ class EfsGame extends EfsBase {
                                 <div class="flex-box f-vertical f-j-center ">
                                     <h5>Death order</h5>
                                     <div class="flex-box f-horizontal f-wrap">
-                                        ${this.game.deadChars.map(char=>html`<div>${this.makeChar(char)}<span>${char.owner ? char.owner : 'no owner'}</span></div>`)}
+                                        ${this.game.deadChars.map(char=>html`<div style="margin:0 1em">${this.makeChar(char)}<div>${char.owner ? char.owner : 'no points'}</div></div>`)}
                                     </div>
                                     ${this.displayToken()}
                                 </div>

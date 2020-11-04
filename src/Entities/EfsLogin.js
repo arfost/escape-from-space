@@ -1,6 +1,6 @@
 
 import { LoginReference } from '../../futur-lib/data.js'
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/app'
 import 'firebase/functions';
 
 export class EfsLogin extends LoginReference {

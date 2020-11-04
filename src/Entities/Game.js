@@ -1,7 +1,5 @@
-import {
-    FireReference
-} from '../../futur-lib/data.js'
-import * as firebase from 'firebase/app';
+import { FireReference } from '../../futur-lib/data.js'
+import firebase from 'firebase/app'
 import 'firebase/functions';
 
 export class Game extends FireReference {
@@ -115,7 +113,7 @@ export class Game extends FireReference {
             let char = deadCharsCopy.pop();
             for (let player of game.players) {
                 if (player.chars.includes(char.id)){
-                  char.owner = player.name;
+                  char.owner = `${player.name} : ${deadCharsCopy.length}`;
                   if(game.score[player.name].manche === 0) {
                     game.score[player.name].manche = deadCharsCopy.length;
                     game.score[player.name].total += game.score[player.name].manche;

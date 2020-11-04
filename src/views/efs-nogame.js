@@ -56,11 +56,9 @@ class EfsNogame extends EfsBase {
     }
 
     displayNews(news){
-        return html`<div class="card">
+        return html`<div class="card" style="width:40vw">
         <h4>${news.title}</h4>
-        <p>
-            ${news.body}
-        </p>
+        <p style="white-space:pre-wrap;">${news.body}</p>
     </div>`
     }
 
@@ -99,7 +97,7 @@ class EfsNogame extends EfsBase {
                         </p>
                     </div>
                 </div>
-                <div class="flex-box f-vertical f-j-start">
+                <div class="flex-box f-vertical f-j-start" style="overflow-x:auto">
                     ${this.news.map(this.displayNews)}
                 </div>
             </div>
