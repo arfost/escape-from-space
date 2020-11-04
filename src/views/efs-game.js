@@ -150,7 +150,7 @@ class EfsGame extends EfsBase {
     }
 
     makeChar(char={}, customClass=''){
-        return html`<img src="${char.picture}" class="char ${customClass}" @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(char)}" />` 
+        return html`<div class="char ${customClass}"><img src="${char.picture}"  @mouseout="${e=>this.configureTooltip(false)}" @mouseover="${e=>this.configureTooltip(char)}" /></div>` 
     }
 
     roomClicked(room){
@@ -400,7 +400,7 @@ class EfsGame extends EfsBase {
                                 <div class="flex-box f-vertical f-j-center ">
                                     <h5>Death order</h5>
                                     <div class="flex-box f-horizontal f-wrap">
-                                        ${this.game.deadChars.map(char=>html`${this.makeChar(char)}`)}
+                                        ${this.game.deadChars.map(char=>html`<div>${this.makeChar(char)}<span>${char.owner ? char.owner : 'no owner'}</span></div>`)}
                                     </div>
                                     ${this.displayToken()}
                                 </div>
