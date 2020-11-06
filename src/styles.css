@@ -23,6 +23,7 @@ body {
   background-color: var(--dark-color);
   font-size: 18px;
   line-height: 1.5rem;
+  overflow: hidden;
 }
 
 a {
