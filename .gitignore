@@ -5,3 +5,4 @@ dist
 .firebase
 *-debug.log
 .scannerwork/
+config/secret_key.json
