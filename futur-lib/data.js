@@ -1,5 +1,5 @@
 import { auth, database } from '../config/fireInit.development'
-import { ref, push, onValue } from 'firebase/database';
+import { ref, push, onValue, update } from 'firebase/database';
 import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 
 export class Dao {
