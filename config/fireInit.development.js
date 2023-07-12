@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
-import { getFunctions } from "firebase/functions";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 import { getAuth } from "firebase/auth";
 
 const app = initializeApp({
@@ -14,5 +14,7 @@ const app = initializeApp({
 export const auth = getAuth(app);
 export const database = getDatabase(app);
 export const functions = getFunctions(app);
+
+connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 
 // firebase.functions().useFunctionsEmulator('http://localhost:5000');
