@@ -1,9 +1,8 @@
-import firebase from 'firebase/app'
 import 'firebase/database';
 import 'firebase/auth';
 import 'firebase/functions';
 import { auth } from '../config/fireInit.development'
-
+import { ref, push } from 'firebase/database';
 export class Dao {
     constructor(refs) {
         if (!refs) {
@@ -76,17 +75,10 @@ export class FireReference {
     initSource(path, params = []) {
         let nodeRef;
         if (!path.includes("--new--")) {
-            nodeRef = firebase
-                .app()
-                .database()
-                .ref(path);
+            nodeRef = ref(database,path)
         } else {
             path = path.replace("--new--", "");
-            nodeRef = firebase
-                .app()
-                .database()
-                .ref(path)
-                .push();
+            nodeRef = push(ref(database,path))
             this.id = nodeRef.key;
         }
 
@@ -110,7 +102,9 @@ export class FireReference {
                 }
             }
         }
-        return firebase.database().ref().update(updates);
+
+        return update(ref(database), updates)
+
     }
 
     newDatas() {
@@ -131,7 +125,7 @@ export class FireReference {
 
     pushToData(source, datas) {
         if (typeof this.data[source] === "object") {
-            let key = firebase.app().database().ref(this.sources[source]).push().key;
+            let key = push(ref(database,this.sources[source])).key;
             this.data[source][key] = datas;
         } else {
             throw new Error("Raw firebase datas must be an object of firebase node with firebase key as properties");

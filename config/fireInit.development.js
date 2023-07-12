@@ -1,8 +1,5 @@
-import { initializeApp, getDatabase } from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database' ;
-import 'firebase/database';
-import 'firebase/auth';
-import 'firebase/functions';
 import { getFunctions } from "firebase/functions";
 import { getAuth } from "firebase/auth";
 
