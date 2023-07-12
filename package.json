@@ -23,14 +23,14 @@
   "homepage": "https://github.com/arfost/escape-from-space#readme",
   "devDependencies": {
     "css-loader": "^1.0.0",
-    "firebase": "^8.0.0",
-    "firebase-tools": "^8.14.1",
     "mini-css-extract-plugin": "^0.4.1",
     "style-loader": "^0.21.0",
     "vite": "4.2.1"
   },
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.1.3",
+    "firebase": "^10.0.0",
+    "firebase-tools": "^12.4.3",
     "lit-element": "^2.1.0"
   }
 }

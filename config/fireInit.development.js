@@ -1,9 +1,12 @@
-import firebase from 'firebase/app'
+import { initializeApp, getDatabase } from 'firebase/app';
+import { getDatabase } from 'firebase/database' ;
 import 'firebase/database';
 import 'firebase/auth';
 import 'firebase/functions';
+import { getFunctions } from "firebase/functions";
+import { getAuth } from "firebase/auth";
 
-firebase.initializeApp({
+initializeApp({
     apiKey: "AIzaSyDPO-yGJev7gxGLCGkOKDMlDlZsjlZ--i0",
     authDomain: "escape-from-space.firebaseapp.com",
     databaseURL: "https://escape-from-space.firebaseio.com",
@@ -12,4 +15,9 @@ firebase.initializeApp({
     appId: "1:1016708495078:web:7a9b748c8e29383e"
 });
 
-firebase.functions().useFunctionsEmulator('http://localhost:5000');
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const database = getDatabase(app);
+export const functions = getFunctions(app);
+
+// firebase.functions().useFunctionsEmulator('http://localhost:5000');

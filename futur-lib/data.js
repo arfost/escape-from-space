@@ -2,6 +2,7 @@ import firebase from 'firebase/app'
 import 'firebase/database';
 import 'firebase/auth';
 import 'firebase/functions';
+import { auth } from '../config/fireInit.development'
 
 export class Dao {
     constructor(refs) {
@@ -142,7 +143,7 @@ export class LoginReference extends FireReference {
 
     constructor() {
         super();
-        firebase.auth().onAuthStateChanged((user) => {
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 // User is signed in.
                 this.uid = user.uid;
@@ -168,7 +169,7 @@ export class LoginReference extends FireReference {
     get actions() {
         return {
             toggleLogin: () => {
-                if (!firebase.auth().currentUser) {
+                if (!auth.currentUser) {
                     // [START createprovider]
                     var provider = new firebase.auth.GoogleAuthProvider();
                     // [END createprovider]
@@ -176,11 +177,11 @@ export class LoginReference extends FireReference {
                     provider.addScope('https://www.googleapis.com/auth/plus.login');
                     // [END addscopes]
                     // [START signin]
-                    return firebase.auth().signInWithRedirect(provider);
+                    return auth.signInWithRedirect(provider);
                     // [END signin]
                 } else {
                     // [START signout]
-                    return firebase.auth().signOut();
+                    return auth.signOut();
                     // [END signout]
                 }
             },
