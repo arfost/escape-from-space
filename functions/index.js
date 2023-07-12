@@ -1,6 +1,6 @@
 /* eslint-disable promise/no-nesting */
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const { onCall } = require("firebase-functions/v2/https");
 
 const efsHelper = require('./efsHelper.js');
 
@@ -13,7 +13,7 @@ admin.initializeApp();
 //  response.send("Hello from Firebase!");
 // });
 
-exports.createGame = functions.https.onCall(async(datas, context)=>{
+exports.createGame = onCall(async(datas, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
     let gameRef = admin.database().ref('games').push();
@@ -36,7 +36,7 @@ exports.createGame = functions.https.onCall(async(datas, context)=>{
     
 });
 
-exports.joinGame = functions.https.onCall(async(key, context)=>{
+exports.joinGame = onCall(async(key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
     let gameRef = admin.database().ref('games/'+key);
@@ -60,7 +60,7 @@ exports.joinGame = functions.https.onCall(async(key, context)=>{
     });
 });
 
-exports.quitGame = functions.https.onCall((key, context)=>{
+exports.quitGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
     let gameRef = admin.database().ref('games/'+key);
@@ -79,7 +79,7 @@ exports.quitGame = functions.https.onCall((key, context)=>{
     });
 });
 
-exports.launchGame = functions.https.onCall((key, context)=>{
+exports.launchGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
     let gameRef = admin.database().ref('games/'+key);
