@@ -1,10 +1,10 @@
-import { html, css } from 'lit-element';
-import { EfsBase } from '../efs-base.js'
-import Datavault from '../datavault.js'
+import { css, html } from 'lit-element';
+import { EfsBase } from '../efs-base.js';
+import Datavault from '../datavault.js';
 
-import '../components/user-profil.js'
-import '../views/efs-nogame.js'
-import '../views/efs-game.js'
+import '../components/user-profil.js';
+import '../views/efs-nogame.js';
+import '../views/efs-game.js';
 
 class EfsMain extends EfsBase {
 
@@ -20,13 +20,11 @@ class EfsMain extends EfsBase {
     showToast(e){
         this.toastMsg = e.detail;
         // Get the snackbar DIV
-        let x = this.shadowRoot.getElementById("snackbar");
-
-        // Add the "show" class to DIV
+        let x = this.shadowRoot.getElementById("snackbar"); // Add the "show" class to DIV
         x.className = "show";
 
         // After 3 seconds, remove the show class from DIV
-        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 6000);
+        setTimeout(() =>{ x.className = x.className.replace("show", ""); }, 6000);
     }
 
     get selfStyles() {

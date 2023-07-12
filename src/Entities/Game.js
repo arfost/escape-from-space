@@ -1,6 +1,6 @@
 import { FireReference } from '../../futur-lib/data.js';
 import { functions } from '../../config/fireInit.development';
-import 'firebase/functions';
+import { httpsCallable } from "firebase/functions";
 
 export class Game extends FireReference {
 
@@ -19,7 +19,7 @@ export class Game extends FireReference {
     get actions() {
         return {
             launchGame: async (key) => {
-                const res = await functions.httpsCallable('launchGame')(key);
+                const res = await httpsCallable(functions,'launchGame')(key);
             },
             moveChar: (oldRoomId, roomId, charId, uid) => {
                 if (this.data.game.players[this.data.game.gameInfo.toPlay].uid !== uid) {

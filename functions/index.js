@@ -13,7 +13,7 @@ initializeApp();
 //  response.send("Hello from Firebase!");
 // });
 
-exports.createGame = onCall(async(datas, context)=>{
+exports.createGame = onCall({cors: true}, async(datas, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const {uid} = context.auth;
     let gameRef = push(ref(getDatabase(),'games'));
