@@ -18,7 +18,7 @@ exports.createGame = onCall({cors: true}, async(request)=>{
     const {uid} = request.auth;
     let gameRef = getDatabase().ref('games').push();
 
-    let user = (await getDatabase().ref(`users/${uid}`).get()).val();
+    let user = (await getDatabase().ref(`users/${uid}`).once('value')).val();
 
     let game = {
         players : [{
@@ -40,7 +40,7 @@ exports.joinGame = onCall(async(key, context)=>{
     const {uid} = context.auth;
     let gameRef = getDatabase().ref(`games/${key}`);
 
-    let user = (await getDatabase().ref(`users/${uid}`).get()).val();    
+    let user = (await getDatabase().ref(`users/${uid}`).once('value')).val();    
     return get(gameRef).then(snap=>{
         let game = snap.val();
         if(game.players.length >=5){
@@ -58,7 +58,7 @@ exports.joinGame = onCall(async(key, context)=>{
 exports.quitGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const {uid} = context.auth;
-    let gameRef = ref(getDatabase(),`games/${key}`);    
+    let gameRef = getDatabase().ref(`games/${key}`);    
     return get(gameRef).then(snap=>{
         let game = snap.val();
         game.players = game.players.filter(pl=>pl.uid !== uid);
@@ -66,7 +66,7 @@ exports.quitGame = onCall((key, context)=>{
             game.gameInfo.toPlay = 0;
         }
         
-        return set(ref(getDatabase(),`games/${key}`),game).then(res=>key);
+        return getDatabase().ref(`games/${key}`).set(game).then(res=>key);
     });
 });
 
