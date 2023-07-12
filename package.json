@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "vite": "vite",
-    "build": "build",
+    "build": "vite build",
     "dev": "yarn clfunctions & vite",
     "dev:win": "win-launch.cmd",
     "clfunctions": "firebase serve --only functions"
