@@ -118,6 +118,22 @@
     "promise/catch-or-return": 2,
 
     // Warn against nested then() or catch() statements
-    "promise/no-nesting": 1
+    "promise/no-nesting": 1,
+
+    "linebreak-style": "off",
+
+    "max-statements": "off",
+
+    "func-names": "off",
+
+    "no-warning-comments": "off",
+
+    "no-inline-comments": "off",
+
+    "line-comment-position": "off",
+
+    "prefer-reflect": "off",
+    
+    "complexity": "warn"
   }
 }

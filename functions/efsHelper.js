@@ -2,7 +2,26 @@
 const NS = 'NS';
 const EO = 'EO';
 
+const getDice = function (min, max) {
+    if (typeof max === 'undefined') {
+        max = min;
+        min = 1;
+    }
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+}
+module.exports.getDice = getDice;
+
+module.exports.shuffleArray = function (a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
 class DungeonGenerator {
+    
 
     getNewDungeon(size) {
         this.rooms = [];
@@ -34,8 +53,7 @@ class DungeonGenerator {
             let connection = this.findNextConnection(activeRoom);
             if (connection) {
                 
-                let newRoom = this.getNextRoom(activeRoom, connection);
-                
+                let newRoom = this.getNextRoom(activeRoom, connection);                
                 activeRoom.connections.rooms.push(newRoom.id);
                 activeRoom.connections.directions.push(connection.direction);
 
@@ -73,7 +91,6 @@ class DungeonGenerator {
 
         let posEastNS = this.createPosForRoom(newRoom, 'E', NS);
         let posEastEO = this.createPosForRoom(newRoom, 'E', EO);
-
         for (let room of rooms) {
             if ((room.pos.x === posNordNS.x && room.pos.y === posNordNS.y) || (room.pos.x === posNordEO.x && room.pos.y === posNordEO.y)) {
                 room.connections.directions.push('S');
@@ -111,13 +128,15 @@ class DungeonGenerator {
     }
 
     inverseDirection(direction){
+        // Error not possible
+        // eslint-disable-next-line default-case
         switch(direction){
             case 'N': return 'S';
             case 'S': return 'N';
             case 'E': return 'O';
             case 'O': return 'E';
         }
-        throw new Error("unknow direction "+direction)
+        throw new Error(`unknow direction ${direction}`)
     }
 
     getSquarePos(pos, orientation){
@@ -136,7 +155,7 @@ class DungeonGenerator {
             if(rect1.x <= rect2.xMax &&
                 rect1.xMax >= rect2.x &&
                 rect1.y <= rect2.yMax &&
-                rect1.yMax >= rect2.y ) {
+                rect1.yMax >= rect2.y) {
                     return true;
             }
             
@@ -149,16 +168,15 @@ class DungeonGenerator {
 
     findNextConnection(room){
         
-        let possible = [];
-        
-        //test north
+        let possible = []; //test north
         console.log('pouet')
         let posNordNS = this.createPosForRoom(room, 'N', NS);
-        let canNS = !this.isOnAnotherRoom(this.rooms, { pos: posNordNS, orientation: NS });
+        let canNS = !this.isOnAnotherRoom(this.rooms, { pos: posNordNS,
+orientation: NS });
 
         let posNordEO = this.createPosForRoom(room, 'N', EO);
-        let canEO = !this.isOnAnotherRoom(this.rooms, { pos: posNordEO, orientation: EO });
-
+        let canEO = !this.isOnAnotherRoom(this.rooms, { pos: posNordEO,
+orientation: EO });
         if (canNS && !canEO) {
             possible.push({
                 orientationConstraint:1,
@@ -182,10 +200,12 @@ class DungeonGenerator {
         //test south
         console.log('pouet')
         let posSouthNS = this.createPosForRoom(room, 'S', NS);
-        canNS = !this.isOnAnotherRoom(this.rooms, { pos: posSouthNS, orientation: NS });
+        canNS = !this.isOnAnotherRoom(this.rooms, { pos: posSouthNS,
+orientation: NS });
 
         let posSouthEO = this.createPosForRoom(room, 'S', EO);
-        canEO = !this.isOnAnotherRoom(this.rooms, { pos: posSouthEO, orientation: EO });
+        canEO = !this.isOnAnotherRoom(this.rooms, { pos: posSouthEO,
+orientation: EO });
 
         if (canNS && !canEO) {
             possible.push({
@@ -210,10 +230,12 @@ class DungeonGenerator {
         //test ouest
         console.log('pouet')
         let posWestNS = this.createPosForRoom(room, 'O', NS);
-        canNS = !this.isOnAnotherRoom(this.rooms, { pos: posWestNS, orientation: NS });
+        canNS = !this.isOnAnotherRoom(this.rooms, { pos: posWestNS,
+orientation: NS });
 
         let posWestEO = this.createPosForRoom(room, 'O', EO);
-        canEO = !this.isOnAnotherRoom(this.rooms, { pos: posWestEO, orientation: EO });
+        canEO = !this.isOnAnotherRoom(this.rooms, { pos: posWestEO,
+orientation: EO });
 
         if (canNS && !canEO) {
             possible.push({
@@ -238,10 +260,12 @@ class DungeonGenerator {
         //test east
         console.log('pouet')
         let posEastNS = this.createPosForRoom(room, 'E', NS);
-        canNS = !this.isOnAnotherRoom(this.rooms, { pos: posEastNS, orientation: NS });
+        canNS = !this.isOnAnotherRoom(this.rooms, { pos: posEastNS,
+orientation: NS });
 
         let posEastEO = this.createPosForRoom(room, 'E', EO);
-        canEO = !this.isOnAnotherRoom(this.rooms, { pos: posEastEO, orientation: EO });
+        canEO = !this.isOnAnotherRoom(this.rooms, { pos: posEastEO,
+orientation: EO });
 
         if (canNS && !canEO) {
             possible.push({
@@ -268,14 +292,14 @@ class DungeonGenerator {
     getNextRoom(connectedRomm, link){
 
         let orientation = this.getOrientation(link ? link.orientationConstraint : undefined);
-        let pos = connectedRomm ? this.createPosForRoom(connectedRomm, link.direction, orientation) : {x:7, y:7}
-
+        let pos = connectedRomm ? this.createPosForRoom(connectedRomm, link.direction, orientation) : {x:7,
+y:7}
         return {
             id: this.rooms.length+1,
             exit: this.rooms.length+1 === 1,
             chest: false,
-            pos: pos,
-            orientation: orientation,
+            pos,
+            orientation,
             connections: {
                 rooms: [],
                 directions: []
@@ -284,11 +308,10 @@ class DungeonGenerator {
     }
 
     createPosForRoom(connectedRomm, direction, selfOrientation){
-        let x = connectedRomm.pos.x;
-        let y = connectedRomm.pos.y;
+        let {x} = connectedRomm.pos;
+        let {y} = connectedRomm.pos;
 
-        let orientation = connectedRomm.orientation;
-
+        let {orientation} = connectedRomm;
         if(direction === 'N'){
             if(orientation === NS){
                 if(selfOrientation === EO){
@@ -352,17 +375,17 @@ class DungeonGenerator {
                 x -= 4;
             }
         }
-        return {x, y}
+        return {x,
+y}
     }
 
     getOrientation(orientationConstraint = getDice(1,2)){
-        return  orientationConstraint === 1 ? NS:EO;
+        return orientationConstraint === 1 ? NS:EO;
     }
 
 }
 
 const generator = new DungeonGenerator();
-
 module.exports.newMap = function () {
     return generator.getNewDungeon(10);
 }
@@ -432,24 +455,4 @@ module.exports.getChars = function () {
         }
     ]
     return chars;
-}
-
-const getDice = function (min, max) {
-    if (typeof max === 'undefined') {
-        max = min;
-        min = 1;
-    }
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-}
-
-module.exports.getDice = getDice;
-
-module.exports.shuffleArray = function (a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
 }

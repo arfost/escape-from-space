@@ -4,7 +4,6 @@ const { initializeApp } = require("firebase-admin/app");
 const { onCall } = require("firebase-functions/v2/https");
 const { getDatabase, ref, push } = require("firebase-admin/database");
 const efsHelper = require('./efsHelper.js');
-
 initializeApp();
 
 // // Create and Deploy Your First Cloud Functions
@@ -16,20 +15,19 @@ initializeApp();
 
 exports.createGame = onCall(async(datas, context)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const uid = context.auth.uid;
+    const {uid} = context.auth;
     let gameRef = push(ref(getDatabase(),'games'));
 
-    let user = (await get(ref(getDatabase(),'users/'+uid))).val();
+    let user = (await get(ref(getDatabase(),`users/${uid}`))).val();
 
     let game = {
         players : [{
-            uid: uid,
+            uid,
             name: user.customName ? user.customName : user.displayName
         }],
         ready: false,
         loaded:true,
-    }
-    
+    }    
     set(gameRef,game);
 
 
@@ -39,58 +37,48 @@ exports.createGame = onCall(async(datas, context)=>{
 
 exports.joinGame = onCall(async(key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const uid = context.auth.uid;
-    let gameRef = ref(getDatabase(),'games/'+key);
+    const {uid} = context.auth;
+    let gameRef = ref(getDatabase(),`games/${key}`);
 
-    let user = (await get(ref(getDatabase(),'users/'+uid))).val();
-    
+    let user = (await get(ref(getDatabase(),`users/${uid}`))).val();    
     return get(gameRef).then(snap=>{
         let game = snap.val();
-
         if(game.players.length >=5){
             throw new Error('This game is at maximum capacity'); //TODO trad
         }
         game.players.push({
-            uid:uid,
+            uid,
             name:user.customName ? user.customName : user.displayName,
         })
         
-        return set(ref(getDatabase(),'games/'+key),game).then(res=>{
-            return key;
-        });
+        return set(ref(getDatabase(),`games/${key}`),game).then(res=>key);
     });
 });
 
 exports.quitGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const uid = context.auth.uid;
-    let gameRef = ref(getDatabase(),'games/'+key);
-    
+    const {uid} = context.auth;
+    let gameRef = ref(getDatabase(),`games/${key}`);    
     return get(gameRef).then(snap=>{
         let game = snap.val();
-
         game.players = game.players.filter(pl=>pl.uid !== uid);
         if(game.gameInfo.toPlay>=game.players.length){
             game.gameInfo.toPlay = 0;
         }
         
-        return set(ref(getDatabase(),'games/'+key),game).then(res=>{
-            return key;
-        });
+        return set(ref(getDatabase(),`games/${key}`),game).then(res=>key);
     });
 });
 
 exports.launchGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const uid = context.auth.uid;
-    let gameRef = ref(getDatabase(),'games/'+key);
-    let cellsRef = ref(getDatabase(),'cells/'+key);
-    
+    const {uid} = context.auth;
+    let gameRef = ref(getDatabase(),`games/${key}`);
+    let cellsRef = ref(getDatabase(),`cells/${key}`);    
     cellsRef.set(efsHelper.newMap());
     
     return get(gameRef).then(snap=>{
         let game = snap.val();
-
         game.liveChars = efsHelper.getChars();
         game.deadChars = [];
 
@@ -109,7 +97,7 @@ exports.launchGame = onCall((key, context)=>{
 
         game.players = game.players.map((player)=>{
             player.chars = [charsKey.shift(), charsKey.shift()];
-            return  player;
+            return player;
         })
 
         game.liveChars = game.liveChars.map((char)=>{
@@ -126,8 +114,6 @@ exports.launchGame = onCall((key, context)=>{
         game.ready = true;
         game.finished = false;
         
-        return set(ref(getDatabase(),'games/'+key),game).then(res=>{
-            return key;
-        });
+        return set(ref(getDatabase(),`games/${key}`),game).then(res=>key);
     });
 });
