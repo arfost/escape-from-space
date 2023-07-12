@@ -1,8 +1,7 @@
-import 'firebase/database';
-import 'firebase/auth';
-import 'firebase/functions';
-import { auth } from '../config/fireInit.development'
-import { ref, push } from 'firebase/database';
+import { auth, database } from '../config/fireInit.development'
+import { ref, push, onValue } from 'firebase/database';
+import { onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
+
 export class Dao {
     constructor(refs) {
         if (!refs) {
@@ -54,7 +53,7 @@ export class FireReference {
                 this.data[source] = this.defaultValues[source];
             }
             connection[source] = this.initSource(this.sources[source], this.params[source]);
-            connection[source].on('value', snap => {
+            onValue(connection[source], snap => {
                 let tmp = snap.val();
                 this.data[source] = tmp ? tmp : this.defaultValues[source];
                 this.newDatas();
@@ -137,7 +136,7 @@ export class LoginReference extends FireReference {
 
     constructor() {
         super();
-        auth.onAuthStateChanged((user) => {
+        onAuthStateChanged(auth,(user) => {
             if (user) {
                 // User is signed in.
                 this.uid = user.uid;
@@ -165,17 +164,17 @@ export class LoginReference extends FireReference {
             toggleLogin: () => {
                 if (!auth.currentUser) {
                     // [START createprovider]
-                    var provider = new firebase.auth.GoogleAuthProvider();
+                    var provider = new GoogleAuthProvider();
                     // [END createprovider]
                     // [START addscopes]
                     provider.addScope('https://www.googleapis.com/auth/plus.login');
                     // [END addscopes]
                     // [START signin]
-                    return auth.signInWithRedirect(provider);
+                    return signInWithRedirect(auth,provider);
                     // [END signin]
                 } else {
                     // [START signout]
-                    return auth.signOut();
+                    return signOut(auth);
                     // [END signout]
                 }
             },
