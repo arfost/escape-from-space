@@ -2,7 +2,7 @@
 // const admin = require('firebase-admin');
 const { initializeApp } = require("firebase-admin/app");
 const { onCall } = require("firebase-functions/v2/https");
-const { getDatabase, ref, push } = require("firebase/database");
+const { getDatabase, ref, push } = require("firebase-admin/database");
 const efsHelper = require('./efsHelper.js');
 
 initializeApp();
