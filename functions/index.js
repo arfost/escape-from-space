@@ -1,10 +1,11 @@
 /* eslint-disable promise/no-nesting */
-const admin = require('firebase-admin');
+// const admin = require('firebase-admin');
+const { initializeApp } = require("firebase-admin/app");
 const { onCall } = require("firebase-functions/v2/https");
-
+const { getDatabase, ref, push } = require("firebase/database");
 const efsHelper = require('./efsHelper.js');
 
-admin.initializeApp();
+initializeApp();
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
@@ -16,9 +17,9 @@ admin.initializeApp();
 exports.createGame = onCall(async(datas, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
-    let gameRef = admin.database().ref('games').push();
+    let gameRef = push(ref(getDatabase(),'games'));
 
-    let user = (await admin.database().ref('users/'+uid).once('value')).val();
+    let user = (await get(ref(getDatabase(),'users/'+uid))).val();
 
     let game = {
         players : [{
@@ -28,8 +29,8 @@ exports.createGame = onCall(async(datas, context)=>{
         ready: false,
         loaded:true,
     }
-
-    gameRef.set(game);
+    
+    set(gameRef,game);
 
 
     return gameRef.key;
@@ -39,11 +40,11 @@ exports.createGame = onCall(async(datas, context)=>{
 exports.joinGame = onCall(async(key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
-    let gameRef = admin.database().ref('games/'+key);
+    let gameRef = ref(getDatabase(),'games/'+key);
 
-    let user = (await admin.database().ref('users/'+uid).once('value')).val();
+    let user = (await get(ref(getDatabase(),'users/'+uid))).val();
     
-    return gameRef.once('value').then(snap=>{
+    return get(gameRef).then(snap=>{
         let game = snap.val();
 
         if(game.players.length >=5){
@@ -54,7 +55,7 @@ exports.joinGame = onCall(async(key, context)=>{
             name:user.customName ? user.customName : user.displayName,
         })
         
-        return admin.database().ref('games/'+key).set(game).then(res=>{
+        return set(ref(getDatabase(),'games/'+key),game).then(res=>{
             return key;
         });
     });
@@ -63,9 +64,9 @@ exports.joinGame = onCall(async(key, context)=>{
 exports.quitGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
-    let gameRef = admin.database().ref('games/'+key);
+    let gameRef = ref(getDatabase(),'games/'+key);
     
-    return gameRef.once('value').then(snap=>{
+    return get(gameRef).then(snap=>{
         let game = snap.val();
 
         game.players = game.players.filter(pl=>pl.uid !== uid);
@@ -73,7 +74,7 @@ exports.quitGame = onCall((key, context)=>{
             game.gameInfo.toPlay = 0;
         }
         
-        return admin.database().ref('games/'+key).set(game).then(res=>{
+        return set(ref(getDatabase(),'games/'+key),game).then(res=>{
             return key;
         });
     });
@@ -82,12 +83,12 @@ exports.quitGame = onCall((key, context)=>{
 exports.launchGame = onCall((key, context)=>{
     // Grab the current value of what was written to the Realtime Database.
     const uid = context.auth.uid;
-    let gameRef = admin.database().ref('games/'+key);
-    let cellsRef = admin.database().ref('cells/'+key);
+    let gameRef = ref(getDatabase(),'games/'+key);
+    let cellsRef = ref(getDatabase(),'cells/'+key);
     
     cellsRef.set(efsHelper.newMap());
     
-    return gameRef.once('value').then(snap=>{
+    return get(gameRef).then(snap=>{
         let game = snap.val();
 
         game.liveChars = efsHelper.getChars();
@@ -125,7 +126,7 @@ exports.launchGame = onCall((key, context)=>{
         game.ready = true;
         game.finished = false;
         
-        return admin.database().ref('games/'+key).set(game).then(res=>{
+        return set(ref(getDatabase(),'games/'+key),game).then(res=>{
             return key;
         });
     });
