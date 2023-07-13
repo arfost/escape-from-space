@@ -3,14 +3,13 @@ import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // root: 'src',
-  base: 'index.html',
+  // assetsInclude: ['**/*.png','**/*.jpg'],
   build: {
     lib: {
       entry: 'index.html',
       formats: ['es']
     },
-    outDir: '../dist'
+    // outDir: '../dist'
     // rollupOptions: {
     //   external: /^lit/
     // }

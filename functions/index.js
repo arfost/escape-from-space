@@ -5,14 +5,7 @@ const { onCall } = require("firebase-functions/v2/https");
 const { getDatabase } = require("firebase-admin/database");
 const efsHelper = require('./efsHelper.js');
 
-const app = initializeApp({
-    apiKey: "AIzaSyDPO-yGJev7gxGLCGkOKDMlDlZsjlZ--i0",
-    authDomain: "escape-from-space.firebaseapp.com",
-    databaseURL: "https://escape-from-space.firebaseio.com",
-    projectId: "escape-from-space",
-    storageBucket: "escape-from-space.appspot.com",
-    appId: "1:1016708495078:web:7a9b748c8e29383e"
-});
+const app = initializeApp();
 
 const database = getDatabase(app);
 
@@ -23,7 +16,7 @@ const database = getDatabase(app);
 //  response.send("Hello from Firebase!");
 // });
 
-exports.createGame = onCall({cors: true}, async(request)=>{
+exports.createGame = onCall(async(request)=>{
     
     // // Grab the current value of what was written to the Realtime Database.
     const {uid} = request.auth;
@@ -39,20 +32,20 @@ exports.createGame = onCall({cors: true}, async(request)=>{
         ready: false,
         loaded:true,
     }    
-    set(gameRef,game);
+    gameRef.set(game);
 
 
     return gameRef.key;
     
 });
 
-exports.joinGame = onCall(async(key, context)=>{
+exports.joinGame = onCall(async(request)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const {uid} = context.auth;
-    let gameRef = database.ref(`games/${key}`);
+    const {uid} = request.auth;
+    let gameRef = database.ref(`games/${request.data}`);
 
     let user = (await database.ref(`users/${uid}`).once('value')).val();    
-    return get(gameRef).then(snap=>{
+    return gameRef.once('value').then(snap=>{
         let game = snap.val();
         if(game.players.length >=5){
             throw new Error('This game is at maximum capacity'); //TODO trad
@@ -62,33 +55,33 @@ exports.joinGame = onCall(async(key, context)=>{
             name:user.customName ? user.customName : user.displayName,
         })
         
-        return database.ref(`games/${key}`).set(game).then(res=>key);
+        return database.ref(`games/${request.data}`).set(game).then(res => request.data);
     });
 });
 
-exports.quitGame = onCall((key, context)=>{
+exports.quitGame = onCall((request)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const {uid} = context.auth;
-    let gameRef = database.ref(`games/${key}`);    
-    return get(gameRef).then(snap=>{
+    const {uid} = request.auth;
+    let gameRef = database.ref(`games/${request.data}`);    
+    return gameRef.once('value').then(snap=>{
         let game = snap.val();
         game.players = game.players.filter(pl=>pl.uid !== uid);
         if(game.gameInfo.toPlay>=game.players.length){
             game.gameInfo.toPlay = 0;
         }
         
-        return database.ref(`games/${key}`).set(game).then(res=>key);
+        return database.ref(`games/${request.data}`).set(game).then(res=> request.data);
     });
 });
 
-exports.launchGame = onCall((key, context)=>{
+exports.launchGame = onCall((request)=>{
     // Grab the current value of what was written to the Realtime Database.
-    const {uid} = context.auth;
-    let gameRef = database.ref(`games/${key}`);
-    let cellsRef = database.ref(`cells/${key}`);    
+    const {uid} = request.auth;
+    let gameRef = database.ref(`games/${request.data}`);
+    let cellsRef = database.ref(`cells/${request.data}`);    
     cellsRef.set(efsHelper.newMap());
     
-    return get(gameRef).then(snap=>{
+    return gameRef.once('value').then(snap=>{
         let game = snap.val();
         game.liveChars = efsHelper.getChars();
         game.deadChars = [];
@@ -125,6 +118,6 @@ exports.launchGame = onCall((key, context)=>{
         game.ready = true;
         game.finished = false;
         
-        return database.ref(`games/${key}`).set(game).then(res=>key);
+        return database.ref(`games/${request.data}`).set(game).then(res=>request.data);
     });
 });

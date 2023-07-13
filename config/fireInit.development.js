@@ -16,5 +16,3 @@ export const database = getDatabase(app);
 export const functions = getFunctions(app);
 
 // connectFunctionsEmulator(functions, "127.0.0.1", 5001);
-
-// firebase.functions().useFunctionsEmulator('http://localhost:5000');

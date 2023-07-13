@@ -418,7 +418,7 @@ module.exports.getChars = function () {
             desc: "Dummy char desc 4"
         }, {
             name: "The showbiz star",
-            picture: "/img/game/char5.png",
+            picture: "src/img/game/char5.png",
             id: 4,
             alive: true,
             desc: "Dummy char desc 5"
