@@ -1,18 +1,15 @@
 import { defineConfig } from 'vite';
+import path from 'path';
 
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // assetsInclude: ['**/*.png','**/*.jpg'],
+  publicDir: 'src',
   build: {
     lib: {
       entry: 'index.html',
       formats: ['es']
     },
-    // outDir: '../dist'
-    // rollupOptions: {
-    //   external: /^lit/
-    // }
   },
   server: {
     host: true,
